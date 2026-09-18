@@ -3,7 +3,19 @@
 Newest first. Each release ships `Decky OptiScaler.zip` for Decky Loader's
 *Install from URL* (Developer mode), and bundles **OptiScaler 0.9.4**.
 
-## [Unreleased]
+## [0.0.7-steamdeck.2] - 2026-09-18
+
+Test build for Steam Deck, including the PR review fixes. Hardware testing pending.
+
+- Reuse DLL hashes between panel updates and skip hashing unknown file sizes.
+- Try the mirror if the original download fails; verify both sources.
+- Validate preset settings and keep Basic controls enabled during ordinary saves.
+- Hide restore when no known upscaler is installed and show the anti-cheat note.
+
+Validation: 14 FSR4 tests, all three UI harnesses, TypeScript, build, and packaging
+passed. The backend selftest has one existing wiki failure, reproduced before
+these changes.
+
 
 ### Added
 
