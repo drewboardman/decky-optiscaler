@@ -9,10 +9,10 @@
  * ended on "Steam did not report an install folder for this game" for every
  * one of them.
  *
- * The target is the answer. A shortcut points at an executable, and the folder
- * holding that executable is the folder OptiScaler goes into — it is where the
- * renderer lives, which is the only thing the install cares about. The folder
- * is worked out by the backend, which is the side that can look at the disk;
+ * Direct targets identify the executable folder. Heroic shortcuts instead
+ * carry a launch URI in their arguments; the backend resolves that URI against
+ * Heroic's installed-game records before looking for the renderer executable.
+ * The folder is worked out by the backend, which can look at the disk;
  * this module's job is to hand it whatever the client will say, because
  * `shortcuts.vdf` is flushed on Steam's schedule and a shortcut added this
  * session is not in it yet.
@@ -27,6 +27,8 @@ export interface ShortcutTarget {
   start_dir?: string;
   /** The name shown in the library, which the folder name rarely matches. */
   name?: string;
+  /** Launcher URIs live here rather than in the shortcut's executable field. */
+  launch_options?: string;
 }
 
 /**
@@ -48,6 +50,7 @@ export function readShortcut(appid: number): ShortcutTarget | null {
             strShortcutExe?: string;
             strShortcutStartDir?: string;
             strDisplayName?: string;
+            strLaunchOptions?: string;
           } | null;
         };
       }
@@ -55,6 +58,7 @@ export function readShortcut(appid: number): ShortcutTarget | null {
     if (details?.strShortcutExe) target.exe = details.strShortcutExe;
     if (details?.strShortcutStartDir) target.start_dir = details.strShortcutStartDir;
     if (details?.strDisplayName) target.name = details.strDisplayName;
+    if (details?.strLaunchOptions !== undefined) target.launch_options = details.strLaunchOptions;
   } catch {
     /* the store is not there; the backend reads shortcuts.vdf instead */
   }

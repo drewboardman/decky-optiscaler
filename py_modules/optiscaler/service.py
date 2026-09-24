@@ -5,7 +5,7 @@ import os
 import time
 from pathlib import Path
 
-from . import autoplan, fsr4build, installer, live, monitor, reframework, steam
+from . import autoplan, fsr4build, heroic, installer, live, monitor, reframework, steam
 from .constants import (
     DEFAULT_PROXY,
     INI_NAME,
@@ -121,7 +121,7 @@ class OptiScalerService:
 
     # -- libraries -------------------------------------------------------
     def _libraries(self):
-        """Steam library folders plus any the user added by hand."""
+        """Steam and Heroic libraries plus any the user added by hand."""
         libraries = []
         for path in steam.library_folders(self.home):
             libraries.append(
@@ -133,6 +133,14 @@ class OptiScalerService:
                     "available": True,
                 }
             )
+        for root in heroic.roots(self.home):
+            libraries.append({
+                "path": str(root),
+                "name": "Heroic (Flatpak)" if heroic.APP_ID in str(root) else "Heroic",
+                "source": "heroic",
+                "game_count": len(heroic.games(self.home, root)),
+                "available": True,
+            })
         for entry in self.settings.get("custom_libraries", []):
             path = Path(entry["path"])
             available = path.is_dir()
@@ -273,6 +281,7 @@ class OptiScalerService:
     async def list_games(self, library_path, source="steam"):
         def work():
             games = (steam.steam_games(library_path) if source == "steam"
+                     else heroic.games(self.home, library_path) if source == "heroic"
                      else steam.folder_games(library_path))
             for game in games:
                 target = self.settings.get_target(game["path"])
@@ -305,6 +314,7 @@ class OptiScalerService:
             for library in self._libraries():
                 source = library["source"]
                 found = (steam.steam_games(library["path"]) if source == "steam"
+                         else heroic.games(self.home, library["path"]) if source == "heroic"
                          else steam.folder_games(library["path"]))
                 for game in found:
                     if game["path"] in seen:
@@ -370,7 +380,10 @@ class OptiScalerService:
                     "legacy": any("FGType" in section for section in values.values()),
                     "keys": sum(len(v) for v in values.values()),
                 }
+            meta = heroic.for_path(self.home, path)
             return {
+                "heroic": heroic.status(meta, self.settings.get("heroic_launch", {}))
+                    if meta else None,
                 "ini_info": ini_info,
                 "wiki_entry": self.settings.get_wiki_entry(str(path)),
                 "fsr4_sources": installer.find_fsr4_sources(self.home),
@@ -402,7 +415,8 @@ class OptiScalerService:
 
         def work():
             game = steam.find_by_appid(self.home, appid, shortcut.get("exe"),
-                                       shortcut.get("start_dir"), shortcut.get("name"))
+                                       shortcut.get("start_dir"), shortcut.get("name"),
+                                       shortcut.get("launch_options"))
             if not game:
                 return {"found": False, "appid": str(appid)}
             return {"found": True, **game}
@@ -412,6 +426,28 @@ class OptiScalerService:
             return game
         detail = await self.get_game(game["path"], game["name"])
         return {**game, "detail": detail}
+
+    async def configure_heroic(self, game_path, target_dir, restore=False):
+        def work():
+            meta = heroic.for_path(self.home, game_path)
+            if not meta:
+                raise ValueError("No unique Heroic installation was found for this game.")
+            root, target = Path(game_path).resolve(), Path(target_dir).resolve()
+            if target != root and root not in target.parents:
+                raise ValueError("Select an executable folder inside this game.")
+            detected = installer.detect(str(target))
+            if not restore and not detected["installed"]:
+                raise ValueError("Install OptiScaler before configuring Heroic.")
+            filenames = [detected["filename"]] if detected["filename"] else []
+            if reframework.status(str(target)).get("installed"):
+                filenames.append("dinput8.dll")
+            return heroic.configure(meta, filenames, self.settings, restore)
+        try:
+            async with self._mutation_lock:
+                result = await self._run(work)
+            return {"ok": True, "heroic": result}
+        except Exception as exc:
+            return {"ok": False, "error": str(exc)}
 
     async def verify_install(self, target_dir):
         """Confirm the bundled files really landed in the game folder."""

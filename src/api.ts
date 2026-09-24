@@ -50,9 +50,12 @@ export const getGame = callable<[gamePath: string, name?: string], GameDetail>("
    is the only place a shortcut's install folder can come from. Call it through
    `resolveGame` in shortcuts.ts rather than directly. */
 export const findRunningGame = callable<
-  [appid: string, shortcut?: { exe?: string; start_dir?: string; name?: string }],
+  [appid: string, shortcut?: { exe?: string; start_dir?: string; name?: string; launch_options?: string }],
   { found: boolean; appid?: string; name?: string; path?: string; detail?: GameDetail }
 >("find_running_game");
+export const configureHeroic = callable<
+  [gamePath: string, targetDir: string, restore?: boolean], ActionResult
+>("configure_heroic");
 export const getFsr4Info = callable<
   [targetDir: string],
   { status: Fsr4Status; sources: Fsr4Source[]; gpu: GpuInfo }

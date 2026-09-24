@@ -25,6 +25,9 @@ OptiScaler v0.9.4 is bundled, so installing works offline and every game gets th
   custom library. OptiScaler has to sit next to the executable that creates the D3D device, so
   the plugin scores the candidates (Unreal's `Binaries/Win64`, Cyberpunk's `bin/x64`) and lets
   you override its pick.
+- **Finds Heroic games automatically.** Epic, GOG and Amazon Windows games in native and
+  Flatpak Heroic installations appear in the library. Heroic's Steam shortcuts resolve to
+  the real game folder, using the same executable picker as Steam games.
 - **Sets the game up from the wiki, online or not.** Your game is matched against the OptiScaler
   [Compatibility List](https://github.com/optiscaler/OptiScaler/wiki/Compatibility-List), with a
   search box to pin the right entry. A copy of the list ships with the plugin and the last
@@ -80,6 +83,32 @@ Grab `Decky-OptiScaler-v*.zip` from the
 
 Every release bundles OptiScaler itself, so there is nothing else to download.
 See the [changelog](CHANGELOG.md) for what changed.
+
+## Heroic Games Launcher
+
+Native (`~/.config/heroic`) and Flatpak
+(`~/.var/app/com.heroicgameslauncher.hgl/config/heroic`) installations are detected
+without a toggle. Install OptiScaler as usual; **Manual setup → Install location**
+selects the executable folder if the automatic pick needs changing.
+
+Then quit the game and Heroic completely, including its tray icon, and choose
+**Enable DLLs in Heroic** in the game's Setup tab. This merges the required Wine DLL
+overrides into Heroic's per-game settings, including `dinput8` when REFramework is
+installed. Launch through Heroic or its existing Steam shortcut. The plugin leaves
+the shortcut's command and launch arguments intact.
+
+The plugin records the previous overrides. **Restore previous Heroic overrides**
+undoes the change, and removing OptiScaler through Setup restores them first.
+Unrelated settings are preserved. If you edit the same DLL override in Heroic after
+setup, the plugin reports the conflict instead of overwriting it. Heroic must be
+closed during settings changes because it caches its configuration.
+
+The Heroic action configures DLL loading only. Apply any additional game arguments
+listed by the compatibility checklist in Heroic yourself. Custom Heroic config
+locations and unsupported launcher formats can still use a custom library and
+manual per-game environment settings. Native Linux games are excluded. Discovery
+and settings changes are covered by fixtures; a real Steam Deck/Flatpak launch and
+live-control check are still required to validate the complete runtime path.
 
 ## Live in-game control
 

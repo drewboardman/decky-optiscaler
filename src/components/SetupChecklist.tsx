@@ -12,6 +12,7 @@ import { useCallback, useEffect, useState } from "react";
 import { FaCheck } from "react-icons/fa";
 import {
   autoInstall,
+  configureHeroic,
   getMonitor,
   install,
   installReframework,
@@ -325,7 +326,7 @@ function HotkeyNote({ plan }: Readonly<{ plan: AutoPlan }>) {
 
 export function SetupChecklist({
   detail,
-  appid,
+  appid: steamAppid,
   plan,
   recommendation,
   loadingWiki,
@@ -340,6 +341,7 @@ export function SetupChecklist({
   onReloadPlan,
   onResetConfig,
 }: Readonly<Props>) {
+  const appid = detail.heroic ? null : steamAppid;
   const installed = Boolean(detail.install.installed);
   const planned = plan?.available ? plan : null;
   const filename = detail.install.filename ?? planned?.filename ?? "dxgi.dll";
@@ -488,8 +490,8 @@ export function SetupChecklist({
         setLaunchOptions(Number(appid), planned.launch_options);
       }
       toaster.toast({
-        title: `${detail.name} is set up`,
-        body: `Installed as ${planned.filename}.`,
+        title: detail.heroic ? "OptiScaler installed" : `${detail.name} is set up`,
+        body: detail.heroic ? "Finish the Heroic launch setup below." : `Installed as ${planned.filename}.`,
       });
       await onChanged();
       await onReloadPlan();
@@ -605,6 +607,13 @@ export function SetupChecklist({
     setBusy(true);
     try {
       if (rememberIt) await remember(PREF_REMOVE_LAUNCH, action);
+      if (detail.heroic?.managed) {
+        const restored = await configureHeroic(detail.path, detail.target, true);
+        if (!restored.ok) {
+          toaster.toast({ title: "Could not restore Heroic settings", body: String(restored.error) });
+          return;
+        }
+      }
       const result = await uninstall(detail.install.path, true);
       if (result.ok) {
         toaster.toast({ title: "OptiScaler removed", body: detail.name });
@@ -870,7 +879,7 @@ export function SetupChecklist({
               </PanelSectionRow>
             ) : null}
 
-            {!appid && needsOverride ? (
+            {!appid && !detail.heroic && needsOverride ? (
               <PanelSectionRow>
                 <Notice tone="warn" title="Set the launch options yourself">
                   This game came from a custom folder rather than Steam, so nothing here can set

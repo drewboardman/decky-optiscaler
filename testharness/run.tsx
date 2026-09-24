@@ -430,6 +430,17 @@ async function render(name: string, element: React.ReactElement) {
       handed?.start_dir === '"/home/deck/Games/Some Game"' &&
       handed?.name === "Some Game"}`);
 
+    (globalThis as any).appDetailsStore = { GetAppDetails: () => ({
+      strShortcutExe: '"flatpak"',
+      strShortcutStartDir: '"/home/deck"',
+      strLaunchOptions: 'run com.heroicgameslauncher.hgl "heroic://launch?appName=GameId&runner=legendary"',
+    }) };
+    const { resolveGame } = await import("../src/shortcuts");
+    await resolveGame("3060399406");
+    if (!handed?.launch_options?.includes("heroic://launch?appName=GameId")) {
+      throw new Error("Heroic launch URI was lost before backend resolution");
+    }
+
     // A Steam game has no shortcut fields at all, and asking for them must not
     // turn into a target made up out of nothing.
     (globalThis as any).appDetailsStore = { GetAppDetails: () => ({}) };
@@ -1486,6 +1497,37 @@ async function render(name: string, element: React.ReactElement) {
     // It is plugin-wide, so it must not turn up in the sidebar.
     console.log(`  the quick panel does not carry it: ${
       !findAll(qp.host, "[data-tab]").some((n) => n.getAttribute("data-tab") === "settings")}`);
+  }
+
+  // Heroic shortcuts must never receive Steam's %command% replacement.
+  {
+    const { InstallPanel } = await import("../src/components/InstallPanel");
+    const { HeroicSetup } = await import("../src/components/HeroicSetup");
+    const assert = (condition: boolean, label: string) => {
+      if (!condition) throw new Error(label);
+      console.log(`  Heroic: ${label}: true`);
+    };
+    const heroicDetail = { ...detail, heroic: {
+      runner: "legendary", app_name: "GameId", config_root: "/heroic", flatpak: true,
+      overrides: "winhttp=n", managed: false, error: null,
+    } };
+    const manual = await render("Heroic manual setup", <InstallPanel
+      detail={heroicDetail} status={fixtures.get_status} appid="3000000000"
+      live={null} onChanged={() => {}} />);
+    assert(!manual.host.textContent!.includes("Steam Launch Options"), "Steam launch editor is hidden");
+    let configured: unknown[] = [];
+    fixtures.configure_heroic = (...args: unknown[]) => { configured = args; return { ok: true }; };
+    const setup = await render("Heroic launch setup", <HeroicSetup detail={heroicDetail} onChanged={() => {}} />);
+    const enable = findAll(setup.host, '[data-mock="ButtonItem"]').find((b) => b.textContent?.includes("Enable DLLs"));
+    assert(Boolean(enable), "enable action is available after installation");
+    await act(async () => { (enable as HTMLElement).click(); });
+    assert(configured[0] === detail.path && configured[1] === detail.target && configured[2] === false,
+      "enable writes Heroic settings for the selected game");
+    const restore = await render("Heroic restore", <HeroicSetup
+      detail={{ ...heroicDetail, heroic: { ...heroicDetail.heroic, managed: true } }} onChanged={() => {}} />);
+    const restoreButton = findAll(restore.host, '[data-mock="ButtonItem"]').find((b) => b.textContent?.includes("Restore previous"));
+    await act(async () => { (restoreButton as HTMLElement).click(); });
+    assert(configured[2] === true, "restore uses Heroic instead of Steam");
   }
 
   console.log("\n=== backend calls made ===");

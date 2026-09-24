@@ -29,7 +29,7 @@ export interface PayloadStatus {
 export interface Library {
   path: string;
   name: string;
-  source: "steam" | "custom";
+  source: "steam" | "custom" | "heroic";
   game_count: number;
   available: boolean;
 }
@@ -38,7 +38,7 @@ export interface Game {
   appid: string | null;
   name: string;
   path: string;
-  source: "steam" | "custom";
+  source: "steam" | "custom" | "heroic";
   size_on_disk: number;
   installed?: boolean;
   filename?: string | null;
@@ -141,7 +141,18 @@ export interface IniInfo {
   keys: number;
 }
 
+export interface HeroicStatus {
+  runner: string;
+  app_name: string;
+  config_root: string;
+  flatpak: boolean;
+  overrides: string;
+  managed: boolean;
+  error: string | null;
+}
+
 export interface GameDetail {
+  heroic?: HeroicStatus | null;
   path: string;
   name: string;
   ini_info: IniInfo;

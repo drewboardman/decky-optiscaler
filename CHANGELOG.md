@@ -3,7 +3,30 @@
 Newest first. Each release ships `Decky OptiScaler.zip` for Decky Loader's
 *Install from URL* (Developer mode), and bundles **OptiScaler 0.9.4**.
 
-## [Unreleased]
+## [0.0.7-steamdeck.3] - 2026-09-24
+
+Prerelease adding Heroic support to the Steam Deck FSR 4 test build.
+
+### Added
+
+- Detect Epic, GOG and Amazon Windows games installed through native or Flatpak
+  Heroic, including custom game install locations and Heroic Steam shortcuts.
+- Reuse the executable-folder picker and add per-game Heroic DLL configuration.
+  Quit Heroic before applying it. Existing environment settings are preserved;
+  prior overrides can be restored and are restored when removing OptiScaler.
+
+### Validation and compatibility
+
+- Updating the plugin does not reinstall existing game files or reset game settings.
+  Heroic settings are changed only through its setup action.
+- Heroic discovery/settings fixtures and UI controls are tested. Actual Steam Deck
+  Flatpak gameplay and live-control validation are still pending.
+- Release selftests use fixed wiki responses instead of depending on changing
+  online entries. The assertions for matching and background refresh remain enabled.
+- The bundled OptiScaler version remains 0.9.4. This build retains the FSR 4 changes
+  from test 2, listed below.
+
+## [0.0.7-steamdeck.2] - 2026-09-18
 
 ### Added
 

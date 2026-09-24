@@ -20,6 +20,7 @@ import { BasicPanel } from "./BasicPanel";
 import { Centered, Pill } from "./Common";
 import { ConfigTab } from "./ConfigTab";
 import { DetailHeader, ModeSwitch } from "./DetailHeader";
+import { HeroicSetup } from "./HeroicSetup";
 import { InstallPanel } from "./InstallPanel";
 import { LiveStats } from "./LiveStats";
 import { MonitorTab } from "./MonitorTab";
@@ -359,6 +360,7 @@ export function GameDetail({
               />
             </>
           )}
+          {setupView !== "logs" ? <HeroicSetup detail={detail} plan={plan} onChanged={load} /> : null}
         </TabBody>
       ),
     },

@@ -91,7 +91,8 @@ function LaunchOptionsPrompt({
  * launch options. Reached from "Manual setup" on the setup checklist,
  * which is where the majority of games never have to come.
  */
-export function InstallPanel({ detail, status, appid, live, onChanged }: Props) {
+export function InstallPanel({ detail, status, appid: steamAppid, live, onChanged }: Props) {
+  const appid = detail.heroic ? null : steamAppid;
   const [filename, setFilename] = useState(detail.install.filename ?? "dxgi.dll");
   const [target, setTarget] = useState(detail.target);
   const [preserveIni, setPreserveIni] = useState(false);
@@ -432,7 +433,7 @@ export function InstallPanel({ detail, status, appid, live, onChanged }: Props) 
         <OptipatcherPanel targetDir={detail.install.path} />
       ) : null}
 
-      <PanelSection title="Steam Launch Options">
+      {!detail.heroic ? <PanelSection title="Steam Launch Options">
         <PanelSectionRow>
           <Notice tone={needsNoOverride ? "info" : "warn"}>
             {needsNoOverride ? (
@@ -500,7 +501,7 @@ export function InstallPanel({ detail, status, appid, live, onChanged }: Props) 
             </Focusable>
           </PanelSectionRow>
         ) : null}
-      </PanelSection>
+      </PanelSection> : null}
     </>
   );
 }

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """End-to-end backend test against a synthetic Steam library in a temp dir.
 
-Exercises library discovery, executable-folder scoring, the wiki lookup (needs
-network; skipped gracefully offline), install/detect/uninstall round trips and
+Exercises library discovery, executable-folder scoring, the wiki lookup (with fixed
+HTTP fixtures), install/detect/uninstall round trips and
 comment-preserving INI edits.
 """
 
@@ -84,6 +84,20 @@ def build_fixture(root):
 
 async def run():
     root = Path(tempfile.mkdtemp(prefix="decky-optiscaler-selftest-"))
+    from optiscaler import wiki as wiki_mod
+    original_http = wiki_mod._http_get
+    # Exercise parsing, matching and background refresh against fixed content.
+    # Live wiki edits must not change whether a release passes its selftest.
+    titles = ["Clair Obscur: Expedition 33", "Cyberpunk 2077", "Black Myth: Wukong",
+              "The Talos Principle 2", "The Elder Scrolls IV: Oblivion Remastered",
+              "Forza Horizon 5"]
+    table = "| Game | Compatibility | Inputs |\n|---|---|---|\n" + "".join(
+        f"| [{title}]({title.replace(' ', '-')}) | OK | DLSS |\n" for title in titles)
+    def fixture_http(url, *args, **kwargs):
+        if "Compatibility-List" in url:
+            return table
+        return "== Test game\n|**Filename**\n|`dxgi.dll`\n"
+    wiki_mod._http_get = fixture_http
     try:
         home = build_fixture(root)
         service = OptiScalerService(
@@ -124,6 +138,8 @@ async def run():
         )
         check("unreal project binaries chosen over Engine/",
               wukong["target"].endswith("b1/Binaries/Win64"), wukong["target"])
+
+        service.wiki.revalidate()
 
         print("\nWiki name matching")
         from optiscaler.wiki import WikiClient  # noqa: E402
@@ -549,6 +565,7 @@ async def run():
         check("imported FSR4 files removed too",
               not (target / "amdxcffx64.dll").exists())
     finally:
+        wiki_mod._http_get = original_http
         shutil.rmtree(root, ignore_errors=True)
 
 

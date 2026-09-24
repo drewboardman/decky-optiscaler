@@ -68,6 +68,12 @@ jobs:
       - name: Backend selftest
         run: python3 scripts/selftest.py
 
+      - name: Heroic discovery and settings lifecycle
+        run: python3 scripts/test_heroic.py
+
+      - name: Steam Deck FSR4 lifecycle
+        run: python3 scripts/test_fsr4.py
+
       # scripts/package.py mirrors the layout `decky plugin build` produces: one
       # top-level folder named after plugin.json's "name", runtime files only.
       - name: Package

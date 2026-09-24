@@ -6,6 +6,7 @@ import zlib
 from pathlib import Path
 
 from .constants import EXE_DIR_BLACKLIST, EXE_NAME_BLACKLIST, STEAM_ROOTS
+from . import heroic
 
 # Matches `"key"   "value"` pairs in Valve's KeyValues text format.
 KV_RE = re.compile(r'"([^"]+)"\s+"([^"]*)"')
@@ -238,6 +239,8 @@ def shortcut_folder(exe, start_dir=None):
     """
     exe = _unquote(exe)
     start_dir = _unquote(start_dir)
+    if heroic.is_launcher(exe) or Path(exe).name in ("flatpak", "flatpak-spawn"):
+        return None
     if exe:
         target = Path(exe)
         try:
@@ -285,6 +288,9 @@ def find_shortcut_by_appid(home, appid):
     entry, _ = shortcut_entry(home, appid)
     if not entry:
         return None
+    if heroic.is_launcher(entry.get("exe"), entry.get("launchoptions")):
+        game = heroic.resolve(home, entry.get("exe"), entry.get("launchoptions"))
+        return {**game, "appid": str(appid)} if game else None
     folder = shortcut_folder(entry.get("exe"), entry.get("startdir"))
     if not folder:
         return None
@@ -526,15 +532,15 @@ def find_exe_dirs(game_path, max_depth=6, limit=40):
     return ordered
 
 
-def find_by_appid(home, appid, exe=None, start_dir=None, name=None):
+def find_by_appid(home, appid, exe=None, start_dir=None, name=None, launch_options=None):
     """Locate a game by the app id its library entry uses.
 
     Two kinds of entry, and only one of them has an app manifest. A Steam game
     is found the usual way. A **non-Steam shortcut** has no manifest, no
     ``steamapps/common`` folder and no install directory anywhere in Steam's
     records — the client knows what to run and nothing else — so its folder is
-    derived from that target instead: the executable the shortcut points at
-    lives in the folder OptiScaler has to go into.
+    derived from that target instead. Heroic launch URIs are resolved through
+    its installed-game records; a launcher executable is never a game folder.
 
     ``exe``/``start_dir``/``name`` are what the client said, passed down by the
     frontend when it could read them. They are tried before ``shortcuts.vdf`` for the
@@ -561,6 +567,12 @@ def find_by_appid(home, appid, exe=None, start_dir=None, name=None):
             "library": str(library),
         }
 
+    entry, _ = shortcut_entry(home, appid)
+    options = launch_options if launch_options is not None else (entry or {}).get("launchoptions")
+    target_exe = exe or (entry or {}).get("exe")
+    if heroic.is_launcher(target_exe, options):
+        game = heroic.resolve(home, target_exe, options)
+        return {**game, "appid": appid} if game else None
     folder = shortcut_folder(exe, start_dir)
     if folder:
         return {

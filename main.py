@@ -84,6 +84,9 @@ class Plugin:
     async def restore_fsr4_build(self, target_dir: str) -> dict:
         return await self.service.restore_fsr4_build(target_dir)
 
+    async def configure_heroic(self, game_path: str, target_dir: str, restore: bool = False) -> dict:
+        return await self.service.configure_heroic(game_path, target_dir, restore)
+
     async def get_launch_options(self, appid: str) -> dict:
         return await self.service.get_launch_options(appid)
 
