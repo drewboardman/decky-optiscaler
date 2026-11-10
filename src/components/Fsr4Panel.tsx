@@ -1,8 +1,8 @@
 import { ButtonItem, PanelSection, PanelSectionRow } from "@decky/ui";
 import { toaster } from "@decky/api";
 import { useCallback, useEffect, useState } from "react";
-import { getFsr4Info, restoreFsr4Build, importFsr4Files, verifyInstall } from "../api";
-import type { Fsr4Build, Fsr4Source, GpuInfo, VerifyResult } from "../types";
+import { getFsr4Info, restoreFsr4Build, setFsr4Build, importFsr4Files, verifyInstall } from "../api";
+import type { Fsr4Build, Fsr4Info, Fsr4Source, GpuInfo, VerifyResult } from "../types";
 import { KeyValue, Mono, Notice, Pill } from "./Common";
 
 interface Props {
@@ -15,7 +15,7 @@ interface Props {
 const GPU_NOTE: Record<string, string> = {
   native: "This GPU runs FSR 4 natively.",
   int8: "This GPU can run FSR 4 through the INT8 model.",
-  experimental: "Select FSR 4.1.1b — Steam Deck in Basic settings for experimental RDNA2 upscaling.",
+  experimental: "RDNA 2. AMD's own 4.1.2 build supports it; select FSR 4 — Steam Deck in Basic settings.",
   unsupported:
     "AMD supports FSR 4 on RDNA 3 and RDNA 4 only. RDNA 2 — which includes the Steam Deck — is not supported yet.",
   unknown: "Could not identify this GPU from sysfs.",
@@ -30,13 +30,13 @@ const GPU_NOTE: Record<string, string> = {
  */
 export function Fsr4Panel({ targetDir, sources, gpu, onChanged }: Props) {
   const [report, setReport] = useState<VerifyResult | null>(null);
-  const [build, setBuild] = useState<Fsr4Build | null>(null);
+  const [info, setInfo] = useState<Fsr4Info | null>(null);
   const [busy, setBusy] = useState(false);
 
   const verify = useCallback(async () => {
     try {
       setReport(await verifyInstall(targetDir));
-      setBuild((await getFsr4Info(targetDir)).status.build ?? null);
+      setInfo(await getFsr4Info(targetDir));
     } catch (exc) {
       toaster.toast({ title: "Verification failed", body: String(exc) });
     }
@@ -46,8 +46,30 @@ export function Fsr4Panel({ targetDir, sources, gpu, onChanged }: Props) {
     void verify();
   }, [verify]);
 
+  const build = info?.status.build ?? null;
   const ffx = report?.ffx_upscaler;
   const problems = report?.problems ?? [];
+  // The release's own build is not "switched to": it is restored, because it
+  // has to come back out of the payload rather than from a pinned archive.
+  const choices = (info?.builds ?? []).filter((choice) => choice.id !== "bundled");
+  const replacement = build?.successor
+    ? choices.find((choice) => choice.id === build.successor) ?? null
+    : null;
+
+  const useBuild = async (choice: Fsr4Build) => {
+    if (!choice.id) return;
+    setBusy(true);
+    try {
+      const result = await setFsr4Build(targetDir, choice.id);
+      if (!result.ok) throw new Error(result.error);
+      await onChanged();
+      await verify();
+    } catch (error) {
+      toaster.toast({ title: "Could not change the FSR 4 build", body: String(error) });
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <PanelSection title="Installed Files & FSR 4">
@@ -80,10 +102,49 @@ export function Fsr4Panel({ targetDir, sources, gpu, onChanged }: Props) {
       {ffx?.fsr4_capable ? (
         <PanelSectionRow>
           <Notice tone="success" title="FSR 4 is present">
-            On Steam Deck, select <b>FSR 4.1.1b — Steam Deck</b> in Basic settings.
-            This installs the community RDNA2 fix and enables INT8 upscaling.
+            On Steam Deck, select <b>FSR 4 — Steam Deck</b> in Basic settings to enable INT8
+            upscaling.
           </Notice>
         </PanelSectionRow>
+      ) : null}
+
+      {/* The one thing worth saying about a build this plugin has stopped
+          offering. The action is the picker below it, so this explains why the
+          official build replaces it and does not repeat the button. */}
+      {build?.retired ? (
+        <PanelSectionRow>
+          <Notice tone="warn" title="This build is no longer shipped">
+            {build.label} is still recognised, so nothing here is broken. AMD's own
+            4.1.2 supports RDNA 2 now
+            {replacement ? ` — switch to ${replacement.label} below to replace it.` : "."}
+          </Notice>
+        </PanelSectionRow>
+      ) : null}
+
+      {choices.length > 0 ? (
+        <>
+          <PanelSectionRow>
+            <Notice tone="info" title="Upscaler build">
+              Replaces <Mono>amd_fidelityfx_upscaler_dx12.dll</Mono> in this game folder.
+              Close the game first; your upscaler and frame generation settings are kept.
+            </Notice>
+          </PanelSectionRow>
+          {choices.map((choice) => {
+            const installed = Boolean(build?.known && build.id === choice.id);
+            return (
+              <PanelSectionRow key={choice.id}>
+                <ButtonItem
+                  layout="below"
+                  disabled={busy || installed}
+                  description={installed ? "Installed in this game folder." : choice.note}
+                  onClick={() => void useBuild(choice)}
+                >
+                  {installed ? `${choice.label} — installed` : `Switch to ${choice.label}`}
+                </ButtonItem>
+              </PanelSectionRow>
+            );
+          })}
+        </>
       ) : null}
 
       {problems.length > 0 ? (

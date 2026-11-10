@@ -314,12 +314,28 @@ async def run():
                   for b in fsr4build.FSR4_BUILDS for source in b["sources"]))
         check("every build names the one file these packages hold",
               all(b["file"] == installer.FFX_UPSCALER_DLL for b in fsr4build.builds()))
-        check("every build names the release to fetch it from",
-              all(source.get("repo") and source.get("tag") and source.get("asset")
+        check("every build names where its archive comes from",
+              all(source.get("asset")
+                  and (source.get("local") or (source.get("repo") and source.get("tag")))
                   for b in fsr4build.FSR4_BUILDS for source in b["sources"]))
+        check("and a build this plugin carries itself is actually in bin/",
+              all((ROOT / "bin" / source["asset"]).is_file()
+                  for b in fsr4build.FSR4_BUILDS for source in b["sources"]
+                  if source.get("local")))
         check("and no two builds install the same file",
               len({b["file_sha256"] for b in fsr4build.FSR4_BUILDS})
               == len(fsr4build.FSR4_BUILDS))
+        # Retiring a build removes it from the choices, not from the table that
+        # identify() reads. If that half were lost, every install of the retired
+        # build would read as unrecognised, verify would call its bytes a problem,
+        # and install() would refuse to reinstall over it.
+        check("a retired build is still pinned and is not offered",
+              all(len(b["file_sha256"]) == 64 for b in fsr4build.FSR4_RETIRED_BUILDS)
+              and not ({b["id"] for b in fsr4build.FSR4_RETIRED_BUILDS}
+                       & {b["id"] for b in fsr4build.builds()}))
+        check("and every retired build names an offered successor",
+              all((fsr4build.find(b.get("successor")) or {}).get("retired") is False
+                  for b in fsr4build.FSR4_RETIRED_BUILDS))
         check("which setting reaches FSR 4 follows the version, not the GPU",
               fsr4build.reaches_fsr4_by([4, 1, 1, 2740]) == "int8"
               and fsr4build.reaches_fsr4_by([4, 0, 2, 0]) == "upgrade")
@@ -332,7 +348,7 @@ async def run():
         # Install one from a hand-made "download": the same call the service
         # makes once `fetch` has verified a real one.
         fake_build = dict(fsr4build.FSR4_BUILDS[0], file_sha256="0" * 64)
-        fake = root / "fake-4.1.1b.dll"
+        fake = root / "fake-upscaler.dll"
         fake.write_bytes(b"NOT A REAL FSR4 DLL" * 1024)
         fake_build["file_sha256"] = hashlib.sha256(fake.read_bytes()).hexdigest()
         installed = installer.install_fsr4_build(str(target), fake, fake_build, None)

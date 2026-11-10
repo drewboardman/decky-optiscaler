@@ -22,6 +22,13 @@ export interface Preset {
 
 const get = (values: ConfigValues, section: string, key: string) =>
   (values[section]?.[key] ?? AUTO).toLowerCase();
+/** The build the Steam Deck preset installs.
+ *
+ * One name for it, because it is compared in three places — what the preset
+ * asks the backend to install, and what the game folder reports afterwards. Two
+ * string literals either side of that comparison drift apart silently the first
+ * time the pinned build moves. */
+export const FSR4_BUILD_ID = "4.1.2";
 
 const change = (section: string, key: string, value: string): OptionChange => ({
   section,
@@ -98,8 +105,8 @@ export const UPSCALER_PRESETS: Preset[] = [
     // installer._replace_fsr4 owns the atomic DLL/settings write. This list
     // documents the preset for matching/validation; onEnableFsr4 applies it.
     id: "fsr4-int8",
-    label: "FSR 4.1.1b — Steam Deck",
-    description: "Downloads the community RDNA2 ghosting fix and enables INT8 upscaling. Close the game first.",
+    label: "FSR 4 — Steam Deck",
+    description: "Installs AMD's own 4.1.2 build and enables INT8 upscaling. Close the game first.",
     changes: [
       change("Upscalers", "Dx12Upscaler", "fsr31"),
       change("Upscalers", "Dx11Upscaler", "fsr31_12"),

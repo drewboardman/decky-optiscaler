@@ -182,16 +182,21 @@ Object.assign(fixtures, {
   get_fsr4_info: {
     status: {
       files: {}, ready: false, required: [],
-      // The released SDK build, identified by hash: the version alone could not
-      // say, since the modelled 4.1.1b reports exactly this one.
+      // Identified by its bytes rather than by the version it reports: two
+      // files can carry the same version and not be the same library.
       build: {
         known: true, id: "bundled", label: "Bundled (FidelityFX SDK 4.1.1)",
         note: "The build the OptiScaler release ships.",
         reaches_fsr4_by: "int8", sha256: "d0dcccc74a43c44b" + "0".repeat(48),
-        bytes: 28761864,
+        bytes: 28761864, retired: false, successor: null,
       },
+      needs_replacement: false,
     },
     sources: [], gpu: {},
+    builds: [
+      { id: "bundled", label: "Bundled (FidelityFX SDK 4.1.1)", note: "The build the OptiScaler release ships." },
+      { id: "4.1.2", label: "4.1.2 (Official AMD, INT8 + Lite)", note: "Official AMD build from FSR SDK 2.4." },
+    ],
   },
   verify_install: {
     ok: true, path: "/x", complete: true, problems: [],
@@ -522,7 +527,7 @@ async function render(name: string, element: React.ReactElement) {
   // The Deck's own row: FSR 4 here is the INT8 override, so the panel has to
   // offer it rather than hide the upscaler entirely. What choosing it does is
   // asserted in live-fields.tsx, which can drive the control.
-  console.log(`  RDNA 2 is offered the INT8 preset: ${gd.host.textContent!.includes("FSR 4.1.1b — Steam Deck")}`);
+  console.log(`  RDNA 2 is offered the INT8 preset: ${gd.host.textContent!.includes("FSR 4 — Steam Deck")}`);
   // Driving the running game is the Quick Access panel's job; this page is for
   // setting a game up, so it must not offer the live switch at all.
   console.log(`  settings tab has no live upscaler switch: ${!gd.host.textContent!.includes("Switch now")}`);
@@ -604,7 +609,7 @@ async function render(name: string, element: React.ReactElement) {
   // version the released SDK reports.
   console.log(`  the FSR 4 build in the folder is named: ${
     manualText.includes("Bundled (FidelityFX SDK 4.1.1)")}`);
-  console.log(`  Setup directs users to the combined Deck preset: ${manualText.includes("FSR 4.1.1b — Steam Deck")}`);
+  console.log(`  Setup directs users to the combined Deck preset: ${manualText.includes("FSR 4 — Steam Deck")}`);
   console.log(`  older community builds are not offered: ${!manualText.includes("Use 4.0.2")}`);
   console.log(`  the launch options are spelled out there: ${
     manualText.includes("WINEDLLOVERRIDES")}`);

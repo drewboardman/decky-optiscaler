@@ -2,6 +2,7 @@ import { callable } from "@decky/api";
 import type {
   AutoPlanResult,
   ConfigResult,
+  Fsr4Info,
   Fsr4Source,
   Fsr4Status,
   GpuInfo,
@@ -56,15 +57,12 @@ export const findRunningGame = callable<
 export const configureHeroic = callable<
   [gamePath: string, targetDir: string, restore?: boolean], ActionResult
 >("configure_heroic");
-export const getFsr4Info = callable<
-  [targetDir: string],
-  { status: Fsr4Status; sources: Fsr4Source[]; gpu: GpuInfo }
->("get_fsr4_info");
+export const getFsr4Info = callable<[targetDir: string], Fsr4Info>("get_fsr4_info");
 export const importFsr4Files = callable<
   [targetDir: string, sourceDir: string],
   ActionResult
 >("import_fsr4_files");
-/** Download a pinned FSR 4 upscaler build and put it in the game folder. */
+/** Put a pinned FSR 4 upscaler build in the game folder. */
 export const setFsr4Build = callable<[targetDir: string, buildId: string], ActionResult>(
   "set_fsr4_build"
 );

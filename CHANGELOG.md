@@ -3,6 +3,38 @@
 Newest first. Each release ships `Decky OptiScaler.zip` for Decky Loader's
 *Install from URL* (Developer mode), and bundles **OptiScaler 0.9.4**.
 
+## [Unreleased]
+
+### Added
+
+- A pinned FSR 4 build may name a `"local"` source instead of a release, in which
+  case the archive is read out of the plugin's own `bin/` rather than downloaded.
+  That is the only way to offer a build with no public release to point at: a
+  community drop posted as a chat-server attachment has no stable URL, and its
+  digest is still verified before anything is unpacked.
+- `scripts/pin_fsr4_build.py`, which turns a downloaded archive into the
+  `FSR4_BUILDS` entry to paste — and refuses when the bytes are already pinned or
+  are the build the OptiScaler release ships, since neither needs a second name.
+- `FSR4_RETIRED_BUILDS`: a build this plugin stops offering stays identifiable by
+  its bytes. Without it every existing install of that build would read as an
+  unrecognised file, verify would call those bytes a problem on every check, and
+  reinstall would refuse over a build it could not find.
+
+### Changed
+
+- **The Steam Deck preset installs AMD's own upscaler.** FSR Upscaling 4.1.2 from
+  FSR SDK 2.4 now ships in `bin/FSR4_4.1.2_INT8.zip`, verified against a pinned
+  digest before it is unpacked, so reaching FSR 4 needs no download. 4.1.2 supports
+  RDNA 2 itself and carries both the full and the Lite INT8 model in one DLL.
+- The community RDNA2 respin and both of its mirrors are gone, along with the
+  anti-cheat caveat that came with redistributing a modified game DLL. `4.1.1b`
+  remains recognised and is reported as replaceable; Setup offers 4.1.2 next to it.
+- `bin/` also accepts `.zip`, because community builds are published as both 7z
+  and zip. The stray-file check in `scripts/package.py` is otherwise unchanged.
+- The selftest reports a build pinned to a local source that is not in `bin/`,
+  instead of leaving it to fail on the Deck at install time. It also checks that
+  a retired build is not offered and that its successor is.
+
 ## [0.0.7-steamdeck.3] - 2026-09-24
 
 Prerelease adding Heroic support to the Steam Deck FSR 4 test build.

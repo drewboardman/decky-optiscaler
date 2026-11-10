@@ -483,19 +483,25 @@ class OptiScalerService:
                 "status": status,
                 "sources": installer.find_fsr4_sources(self.home),
                 "gpu": gpu_info(),
+                # The choices, described the way the status describes what is
+                # installed, so the panel can render both without a second table.
+                "builds": fsr4build.builds(),
             }
 
         return await self._run(work)
 
     async def set_fsr4_build(self, target_dir, build_id):
-        """Enable the pinned community upscaler and INT8 settings together."""
+        """Install a pinned upscaler and its INT8 settings together."""
         try:
             build = fsr4build.find(build_id)
-            if build is None:
-                raise ValueError("Unsupported Steam Deck FSR 4 build")
+            # Retired builds stay identifiable so old installs verify, but they
+            # are not something to choose again — only their successor is.
+            if build is None or build.get("retired"):
+                raise ValueError("Unsupported FSR 4 build")
             async with self._mutation_lock:
                 await self._run(installer.require_stopped_install, target_dir)
-                dll = await self._run(fsr4build.fetch, build, self.fsr4_build_cache(), self.log)
+                dll = await self._run(fsr4build.fetch, build, self.fsr4_build_cache(),
+                                      self.log, self.plugin_dir / "bin")
                 # Installer checks again: the game may have started during download.
                 result = await self._run(
                     installer.install_fsr4_build, target_dir, dll, build, self.log, True

@@ -104,7 +104,7 @@ Object.assign(fixtures, {
   get_pref: { key: "auto", value: null },
   set_fsr4_build: () => {
     if (fsr4SetupFails) return { ok: false, error: "Close the game before changing the FSR 4 build." };
-    installedFsr4Build = "4.1.1b";
+    installedFsr4Build = "4.1.2";
     setIni({ Upscalers: { Dx12Upscaler: "fsr31" },
       FSR: { Fsr4ForceEnableInt8: "true", Fsr4Update: "auto", UpscalerIndex: "0" } });
     return { ok: true };

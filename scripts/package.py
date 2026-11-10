@@ -48,10 +48,10 @@ def collect():
     return entries
 
 
-# bin/ holds exactly two things: the pinned OptiScaler release archive and the
-# compiled live-control ASI. Anything else is almost certainly an extracted
-# payload, which would multiply the zip size.
-ALLOWED_BIN_SUFFIXES = (".7z", ".asi")
+# bin/ holds the pinned OptiScaler release archive, the compiled live-control
+# ASI, and any FSR 4 build this plugin carries itself. Anything else is almost
+# certainly an extracted payload, which would multiply the zip size.
+ALLOWED_BIN_SUFFIXES = (".7z", ".zip", ".asi")
 
 
 def check_bin():

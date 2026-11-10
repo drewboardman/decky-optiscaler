@@ -3,6 +3,12 @@
 *.asi binary
 *.dll binary
 
+# Everything in bin/ is third-party: the OptiScaler release, and any FSR 4 build
+# this plugin carries itself instead of pointing at a release (see
+# scripts/pin_fsr4_build.py). Kept out of language stats and collapsed in diffs.
+bin/*.7z linguist-vendored=true
+bin/*.zip binary linguist-vendored=true
+
 # Generated — see CLAUDE.md. Collapsed in diffs and excluded from language stats.
 src/config/generatedSchema.ts linguist-generated=true
 py_modules/optiscaler/schema_generated.py linguist-generated=true

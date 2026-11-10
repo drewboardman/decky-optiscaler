@@ -75,8 +75,9 @@ export interface FfxUpscalerInfo {
  *
  * `known` is false for a file that hashes to nothing this plugin pins: it is
  * still reported — with its hash — rather than being passed off as the one the
- * release carries. Which build it is cannot be read from a version number,
- * because the modelled 4.1.1b reports exactly what the released SDK reports. */
+ * release carries. Official AMD builds do carry a version resource, but two
+ * files can report the same version and not be the same library, which is why
+ * the hash is what decides. */
 export interface Fsr4Build {
   known: boolean;
   id: string | null;
@@ -86,6 +87,10 @@ export interface Fsr4Build {
   reaches_fsr4_by: string | null;
   sha256: string | null;
   bytes: number;
+  /** A build this plugin has stopped offering: recognised, never selectable. */
+  retired?: boolean;
+  /** The id of the build that replaced a retired one. */
+  successor?: string | null;
 }
 
 export interface Fsr4Status {
@@ -94,6 +99,17 @@ export interface Fsr4Status {
   required: string[];
   ffx?: FfxUpscalerInfo;
   build?: Fsr4Build | null;
+  /** The installed build is retired, so what is here is worth replacing. */
+  needs_replacement?: boolean;
+}
+
+/** Everything the FSR 4 panel needs: what is installed, and what could be. */
+export interface Fsr4Info {
+  status: Fsr4Status;
+  sources: Fsr4Source[];
+  gpu: GpuInfo;
+  /** The builds a user may switch to, the release's own included. */
+  builds: Fsr4Build[];
 }
 
 export interface Fsr4Source {

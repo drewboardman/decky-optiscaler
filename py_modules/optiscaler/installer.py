@@ -230,6 +230,7 @@ def fsr4_status(target_dir):
     target = Path(target_dir)
     present = {name: (target / name).is_file() for name in FSR4_SUPPORT_FILES}
     ffx = ffx_upscaler_info(target_dir)
+    build = fsr4build.identify(target / FFX_UPSCALER_DLL)
     return {
         "files": present,
         "ready": present.get("amdxcffx64.dll", False),
@@ -240,7 +241,12 @@ def fsr4_status(target_dir):
         # — or by another tool — is reported the same way one installed from
         # here is, and reported as *unknown* rather than as the released one when
         # the hash matches nothing (see fsr4build.identify).
-        "build": fsr4build.identify(target / FFX_UPSCALER_DLL),
+        "build": build,
+        # Recognised, but no longer offered: the build is one this plugin has
+        # retired and there is a successor it can name. The one useful action is
+        # to offer that, which is why this is a flag rather than a version test in
+        # the frontend.
+        "needs_replacement": bool(build and build.get("retired")),
     }
 
 
@@ -376,7 +382,7 @@ def _replace_fsr4(target, source, recorded, enable_int8=False):
 
 
 def install_fsr4_build(target_dir, dll_path, build, logger=None, enable_int8=False):
-    """Install a verified community DLL, optionally enabling the Deck preset."""
+    """Install a verified upscaler DLL, optionally enabling the Deck preset."""
     if fsr4build.digest(dll_path) != build["file_sha256"]:
         raise ValueError("FSR 4 DLL checksum mismatch")
     recorded = {"id": build["id"], "label": build["label"],
