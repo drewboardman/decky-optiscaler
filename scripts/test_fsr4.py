@@ -213,7 +213,9 @@ class DeckFsr4Tests(unittest.TestCase):
         self.payload = asyncio.run(self.service.ensure_payload())
         self.target = self.root/'game'
         self.target.mkdir()
-        (self.target/FFX_UPSCALER_DLL).write_bytes(b'original game DLL')
+        (self.target/'OptiScaler').mkdir(exist_ok=True)
+        self.ffx = installer.ffx_upscaler_path(self.target)
+        self.ffx.write_bytes(b'original game DLL')
         installer.install(self.target, self.payload)
         ini = IniFile(self.target/INI_NAME)
         ini.set('FrameGen', 'FGOutput', 'fsr3')
@@ -238,8 +240,8 @@ class DeckFsr4Tests(unittest.TestCase):
             return asyncio.run(self.service.set_fsr4_build(str(self.target), TEST_BUILD_ID))
 
     def snapshot(self):
-        return {name: (self.target/name).read_bytes()
-                for name in [FFX_UPSCALER_DLL, INI_NAME, MANIFEST_NAME]}
+        paths = [self.ffx, self.target/INI_NAME, self.target/MANIFEST_NAME]
+        return {str(p): (p.read_bytes() if p.is_file() else None) for p in paths}
 
     def test_enable_verify_reinstall_restore_uninstall(self):
         self.assertTrue(self.enable()['ok'])
@@ -251,14 +253,14 @@ class DeckFsr4Tests(unittest.TestCase):
         self.assertEqual(config['values']['FrameGen']['FGOutput'], 'fsr3')
         self.assertTrue(installer.verify_install(self.target, self.payload)['complete'])
         installer.install(self.target, self.payload)
-        self.assertEqual((self.target/FFX_UPSCALER_DLL).read_bytes(), self.dll.read_bytes())
+        self.assertEqual(self.ffx.read_bytes(), self.dll.read_bytes())
         self.assertEqual(installer.read_manifest(self.target)['fsr4_build']['id'], TEST_BUILD_ID)
         installer.restore_fsr4_build(self.target, self.payload)
-        self.assertEqual(fsr4build.identify(self.target/FFX_UPSCALER_DLL)['id'], 'bundled')
+        self.assertEqual(fsr4build.identify(self.ffx)['id'], 'bundled')
         self.assertTrue(installer.verify_install(self.target, self.payload)['complete'])
         self.assertTrue(self.enable()['ok'])
         installer.uninstall(self.target)
-        self.assertEqual((self.target/FFX_UPSCALER_DLL).read_bytes(), b'original game DLL')
+        self.assertEqual(self.ffx.read_bytes(), b'original game DLL')
 
     def test_other_registered_build_is_accepted_and_unknown_is_rejected(self):
         self.build['id'] = 'future-build'
@@ -285,8 +287,9 @@ class DeckFsr4Tests(unittest.TestCase):
 
     def test_same_size_corruption_fails_verification_and_reinstall(self):
         self.assertTrue(self.enable()['ok'])
-        (self.target/FFX_UPSCALER_DLL).write_bytes(b'x'*self.build['file_bytes'])
-        self.assertIn(FFX_UPSCALER_DLL, installer.verify_install(self.target, self.payload)['problems'])
+        self.ffx.write_bytes(b'x'*self.build['file_bytes'])
+        self.assertTrue(any(FFX_UPSCALER_DLL in p for p in
+                            installer.verify_install(self.target, self.payload)['problems']))
         before = self.snapshot()
         with self.assertRaises(ValueError):
             installer.install(self.target, self.payload)
@@ -307,9 +310,9 @@ class DeckFsr4Tests(unittest.TestCase):
 
     def test_unmanaged_install_rejected(self):
         (self.target/MANIFEST_NAME).unlink()
-        before = (self.target/FFX_UPSCALER_DLL).read_bytes()
+        before = self.ffx.read_bytes()
         self.assertFalse(self.enable()['ok'])
-        self.assertEqual(before, (self.target/FFX_UPSCALER_DLL).read_bytes())
+        self.assertEqual(before, self.ffx.read_bytes())
 
     def test_manifest_write_failure_rolls_back_dll_and_ini(self):
         before = self.snapshot()
@@ -344,8 +347,7 @@ class DeckFsr4Tests(unittest.TestCase):
             self.assertEqual(status['build']['successor'], TEST_BUILD_ID)
             self.assertTrue(status['needs_replacement'])
             installer.install(self.target, self.payload)
-            self.assertEqual((self.target/FFX_UPSCALER_DLL).read_bytes(),
-                             retired_dll.read_bytes())
+            self.assertEqual(self.ffx.read_bytes(), retired_dll.read_bytes())
             self.assertEqual(installer.read_manifest(self.target)['fsr4_build']['id'],
                              'retired-build')
 

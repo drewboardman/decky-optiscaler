@@ -208,8 +208,11 @@ async def run():
         original = b"THE GAME'S OWN DXGI" * 8
         (target / "dxgi.dll").write_bytes(original)
         # Games that ship their own FidelityFX DLLs must get them back intact.
+        # v10 keeps its libraries in a folder of its own, so that is where a game's
+        # own copy has to sit for the install to displace it.
         game_upscaler = b"GAME'S OWN FSR31 UPSCALER" * 8
-        (target / "amd_fidelityfx_upscaler_dx12.dll").write_bytes(game_upscaler)
+        (target / "OptiScaler").mkdir(exist_ok=True)
+        (target / "OptiScaler" / "amd_fidelityfx_upscaler_dx12.dll").write_bytes(game_upscaler)
         (target / "Licenses").mkdir(exist_ok=True)
         (target / "Licenses" / "game.txt").write_text("GAME LICENSE")
 
@@ -222,10 +225,11 @@ async def run():
         stash = target / "decky_optiscaler_backup_files"
         check("backup folder created", stash.is_dir(), stash.name)
         check("game's own FidelityFX dll set aside",
-              (stash / "amd_fidelityfx_upscaler_dx12.dll").is_file())
+              (stash / "OptiScaler" / "amd_fidelityfx_upscaler_dx12.dll").is_file())
         check("game's own Licenses folder set aside", (stash / "Licenses").is_dir())
         check("OptiScaler's FidelityFX dll actually replaced it",
-              (target / "amd_fidelityfx_upscaler_dx12.dll").read_bytes() != game_upscaler)
+              (target / "OptiScaler" / "amd_fidelityfx_upscaler_dx12.dll")
+              .read_bytes() != game_upscaler)
 
         info = installer.detect(str(target))
         check("install detected", info["installed"] and info["filename"] == "dxgi.dll")
@@ -340,7 +344,7 @@ async def run():
               fsr4build.reaches_fsr4_by([4, 1, 1, 2740]) == "int8"
               and fsr4build.reaches_fsr4_by([4, 0, 2, 0]) == "upgrade")
         check("the released upscaler is identified by its bytes",
-              (fsr4build.identify(target / installer.FFX_UPSCALER_DLL) or {}).get("id")
+              (fsr4build.identify(installer.ffx_upscaler_path(target)) or {}).get("id")
               == "bundled")
         check("a build that is not one of ours says so",
               (fsr4build.identify(source / "amdxc64.dll") or {}).get("known") is False)
@@ -568,11 +572,12 @@ async def run():
         check("no install remains", not installer.detect(str(target))["installed"])
         check("game folder restored to original contents",
               sorted(p.name for p in target.iterdir())
-              == ["Cyberpunk2077.exe", "Licenses", "amd_fidelityfx_upscaler_dx12.dll", "dxgi.dll"],
+              == ["Cyberpunk2077.exe", "Licenses", "OptiScaler", "dxgi.dll"],
               sorted(p.name for p in target.iterdir()))
         check("original dll byte-identical", (target / "dxgi.dll").read_bytes() == original)
         check("game's own FidelityFX dll restored byte-identical",
-              (target / "amd_fidelityfx_upscaler_dx12.dll").read_bytes() == game_upscaler)
+              (target / "OptiScaler" / "amd_fidelityfx_upscaler_dx12.dll")
+              .read_bytes() == game_upscaler)
         check("game's own Licenses folder restored",
               (target / "Licenses" / "game.txt").read_text() == "GAME LICENSE")
         check("backup folder cleaned up", not stash.exists())

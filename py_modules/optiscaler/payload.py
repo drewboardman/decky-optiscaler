@@ -46,7 +46,6 @@ def available_extractor():
 
 def extract_archive(archive, dest, logger=None):
     """Unpack an archive with whichever archiver the system has.
-
     The payload is unpacked through this too, because the reason it cannot be
     unpacked in Python is not specific to it: a 7z that uses the BCJ2 filter is
     beyond the stdlib and py7zr alike, and the FSR 4 build packages on the mirror
@@ -93,6 +92,34 @@ def _run(argv, logger=None):
     if result.returncode != 0:
         return False, (result.stderr or result.stdout or "").strip()[:400]
     return True, ""
+
+
+def install_driver_libs(archive, dest, expected_sha256, names, logger=None):
+    """Unpack the AMD driver FSR libraries into the extracted payload.
+
+    They are not part of the OptiScaler release, so `Payload` knows nothing about
+    them: they are our own pinned archive, put where the rest of the payload
+    expects to find them. The archive is verified first because what follows is
+    an extraction, and it is idempotent because every install would otherwise
+    re-extract 150 MB of driver library.
+    """
+    archive, dest = Path(archive), Path(dest)
+    if all((dest / name).is_file() for name in names):
+        return dest
+    if not archive.is_file():
+        raise FileNotFoundError(f"bundled archive missing: {archive}")
+    actual = sha256(archive)
+    if actual != expected_sha256:
+        raise ValueError(
+            f"archive checksum mismatch: expected {expected_sha256}, got {actual}"
+        )
+    extract_archive(archive, dest, logger)
+    missing = [name for name in names if not (dest / name).is_file()]
+    if missing:
+        raise RuntimeError(
+            f"driver archive did not contain {', '.join(missing)}"
+        )
+    return dest
 
 
 class Payload:

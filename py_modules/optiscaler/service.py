@@ -8,15 +8,20 @@ from pathlib import Path
 from . import autoplan, fsr4build, heroic, installer, live, monitor, reframework, steam
 from .constants import (
     DEFAULT_PROXY,
+    FSR4_DRIVER_ARCHIVE,
+    FSR4_DRIVER_FILES,
+    FSR4_DRIVER_SHA256,
     INI_NAME,
     OPTIPATCHER_NAME,
     OPTIPATCHER_VERSION,
     OPTISCALER_VERSION,
     PAYLOAD_ARCHIVE,
+    PAYLOAD_SUBDIR,
     PROXY_FILENAMES,
     REFRAMEWORK_DLL,
 )
 from .inifile import IniFile
+from . import payload
 from .payload import Payload
 from .schema import SCHEMA, valid as _valid
 from .settings import Settings
@@ -57,9 +62,19 @@ class OptiScalerService:
 
     async def ensure_payload(self, force=False):
         async with self._payload_lock:
-            if self.payload.ready and not force:
-                return str(self.payload.root)
-            root = await self._run(self.payload.ensure, force, self.log)
+            root = self.payload.root
+            if force or not self.payload.ready:
+                root = await self._run(self.payload.ensure, force, self.log)
+            # The driver libraries are ours, not OptiScaler's, so they are
+            # unpacked into the payload rather than trusted to be in the release.
+            await self._run(
+                payload.install_driver_libs,
+                self.plugin_dir / "bin" / FSR4_DRIVER_ARCHIVE,
+                root / PAYLOAD_SUBDIR,
+                FSR4_DRIVER_SHA256,
+                FSR4_DRIVER_FILES,
+                self.log,
+            )
             return str(root)
 
     # -- keeping the wiki cache current ----------------------------------
@@ -781,7 +796,8 @@ class OptiScalerService:
                 "path": str(path),
                 "values": IniFile(path).to_dict(),
                 "modified": path.stat().st_mtime,
-                "fsr4_build": (fsr4build.identify(path.parent / installer.FFX_UPSCALER_DLL) or {}).get("id"),
+                "fsr4_build": (fsr4build.identify(
+                    installer.ffx_upscaler_path(path.parent)) or {}).get("id"),
             }
 
         return await self._run(work)

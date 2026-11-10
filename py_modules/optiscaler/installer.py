@@ -29,6 +29,7 @@ from .constants import (
     MANIFEST_NAME,
     OPTISCALER_VERSION,
     PAYLOAD_DIRS,
+    PAYLOAD_SUBDIR,
     PAYLOAD_FILES,
     PROXY_FILENAMES,
     REFRAMEWORK_DLL,
@@ -202,6 +203,16 @@ def detect(target_dir):
     return result
 
 
+def support_dir(target_dir):
+    """Where v10 keeps its libraries: a folder, not beside the executable."""
+    return Path(target_dir) / PAYLOAD_SUBDIR
+
+
+def ffx_upscaler_path(target_dir):
+    """The FidelityFX upscaler library for a game, wherever the runtime keeps it."""
+    return support_dir(target_dir) / FFX_UPSCALER_DLL
+
+
 def ffx_upscaler_info(target_dir):
     """The FidelityFX upscaler library actually sitting in the game folder.
 
@@ -209,7 +220,7 @@ def ffx_upscaler_info(target_dir):
     it is what decides whether FSR 4 is even on offer - so it belongs in front
     of the user rather than behind a verify step.
     """
-    dll = Path(target_dir) / FFX_UPSCALER_DLL
+    dll = ffx_upscaler_path(target_dir)
     version = pe_file_version(dll) if dll.is_file() else None
     return {
         "present": dll.is_file(),
@@ -230,7 +241,7 @@ def fsr4_status(target_dir):
     target = Path(target_dir)
     present = {name: (target / name).is_file() for name in FSR4_SUPPORT_FILES}
     ffx = ffx_upscaler_info(target_dir)
-    build = fsr4build.identify(target / FFX_UPSCALER_DLL)
+    build = fsr4build.identify(ffx_upscaler_path(target))
     return {
         "files": present,
         "ready": present.get("amdxcffx64.dll", False),
@@ -336,18 +347,21 @@ def atomic_copy(source, destination):
 def _replace_fsr4(target, source, recorded, enable_int8=False):
     manifest = require_stopped_install(target)
     target = Path(target)
-    if FFX_UPSCALER_DLL not in manifest.get("files", []):
+    dll_name = f"{PAYLOAD_SUBDIR}/{FFX_UPSCALER_DLL}"
+    if dll_name not in manifest.get("files", []):
         raise ValueError("Reinstall OptiScaler before changing its upscaler build.")
-    # Roll back both settings and DLL if any part of the operation fails.
-    names = [FFX_UPSCALER_DLL, MANIFEST_NAME, INI_NAME]
+    # Roll back both settings and DLL if any part of the operation fails. Nested
+    # names are flattened inside the staging folder, which only has to hold copies.
+    names = [dll_name, MANIFEST_NAME, INI_NAME]
+    flat = lambda name: name.replace("/", "__")
     with tempfile.TemporaryDirectory(prefix=".decky-fsr4-", dir=target) as staging:
         staging = Path(staging)
         existed = {name: (target / name).is_file() for name in names}
         for name in names:
             if existed[name]:
-                shutil.copy2(target / name, staging / name)
+                shutil.copy2(target / name, staging / flat(name))
         try:
-            atomic_copy(source, target / FFX_UPSCALER_DLL)
+            atomic_copy(source, target / dll_name)
             if enable_int8:
                 if not existed[INI_NAME]:
                     raise FileNotFoundError("OptiScaler.ini not found")
@@ -375,7 +389,7 @@ def _replace_fsr4(target, source, recorded, enable_int8=False):
         except Exception:
             for name in names:
                 if existed[name]:
-                    atomic_copy(staging / name, target / name)
+                    atomic_copy(staging / flat(name), target / name)
                 else:
                     (target / name).unlink(missing_ok=True)
             raise
@@ -394,12 +408,12 @@ def install_fsr4_build(target_dir, dll_path, build, logger=None, enable_int8=Fal
 
 def restore_fsr4_build(target_dir, payload_root, logger=None):
     """Restore the bundled DLL; upscaler and frame-generation settings stay intact."""
-    source = Path(payload_root) / FFX_UPSCALER_DLL
+    source = Path(payload_root) / PAYLOAD_SUBDIR / FFX_UPSCALER_DLL
     if fsr4build.digest(source) != fsr4build.BUNDLED_BUILD["file_sha256"]:
         raise ValueError("Bundled FSR 4 DLL checksum mismatch")
     _replace_fsr4(target_dir, source, {})
     return {"path": str(target_dir), "restored": FFX_UPSCALER_DLL,
-            "build": fsr4build.identify(Path(target_dir) / FFX_UPSCALER_DLL)}
+            "build": fsr4build.identify(ffx_upscaler_path(target_dir))}
 
 
 def add_files(target_dir, sources, logger=None, reframework_revision=None):
@@ -496,22 +510,30 @@ def remove_files(target_dir, names, logger=None):
     return {"ok": True, "removed": removed, "restored": restored}
 
 
-def _stash(target, path, logger=None):
-    """Move a file or directory into the backup folder; returns its name."""
+def _stash(target, path, logger=None, relative=None):
+    """Move a file or directory into the backup folder; returns its name.
+
+    `relative` is the path it occupied inside the game folder. Backups used to be
+    flattened to a basename because every displaced file lived at the root; v10
+    keeps its libraries in a folder, and a game's own copy of one of them has to
+    come back to that folder rather than to the root it never came from.
+    """
     stash = backup_dir(target)
     stash.mkdir(parents=True, exist_ok=True)
-    destination = stash / path.name
+    name = Path(relative) if relative else Path(path.name)
+    destination = stash / name
+    destination.parent.mkdir(parents=True, exist_ok=True)
     if destination.exists():
         # An earlier install already preserved the original; keep the oldest.
         if path.is_dir():
             shutil.rmtree(path, ignore_errors=True)
         else:
             path.unlink(missing_ok=True)
-        return path.name
+        return name.as_posix()
     shutil.move(str(path), str(destination))
     if logger:
-        logger.info("backed up %s to %s/", path.name, BACKUP_DIR)
-    return path.name
+        logger.info("backed up %s to %s/", name.as_posix(), BACKUP_DIR)
+    return name.as_posix()
 
 
 def install(target_dir, payload_root, filename=DEFAULT_PROXY, preserve_ini=True,
@@ -551,8 +573,8 @@ def install(target_dir, payload_root, filename=DEFAULT_PROXY, preserve_ini=True,
     selected_build = old_manifest.get("fsr4_build") or {}
     if selected_build:
         build = fsr4build.find(selected_build.get("id"))
-        if not build or not (target / FFX_UPSCALER_DLL).is_file() or fsr4build.digest(
-                target / FFX_UPSCALER_DLL) != build["file_sha256"]:
+        if not build or not ffx_upscaler_path(target).is_file() or fsr4build.digest(
+                ffx_upscaler_path(target)) != build["file_sha256"]:
             raise ValueError("Selected FSR 4 build is missing or changed. Enable it again or restore the bundled build first.")
     old_files = set(old_manifest.get("files") or [])
     old_dirs = set(old_manifest.get("dirs") or [])
@@ -582,10 +604,11 @@ def install(target_dir, payload_root, filename=DEFAULT_PROXY, preserve_ini=True,
 
     def place(src, dest_name):
         dest = target / dest_name
+        dest.parent.mkdir(parents=True, exist_ok=True)
         if dest.exists() and dest_name not in backups and dest_name not in created:
             # Only stash files that belong to the game, not our own leftovers.
             if dest_name not in old_files and not _looks_like_optiscaler(dest):
-                backups[dest_name] = _stash(target, dest, logger)
+                backups[dest_name] = _stash(target, dest, logger, dest_name)
         shutil.copy2(src, dest)
         if dest_name not in created:
             created.append(dest_name)
@@ -599,12 +622,17 @@ def install(target_dir, payload_root, filename=DEFAULT_PROXY, preserve_ini=True,
         created.append(INI_NAME)
 
     for name in PAYLOAD_FILES:
-        if name == FFX_UPSCALER_DLL and selected_build:
+        if Path(name).name == FFX_UPSCALER_DLL and selected_build:
             created.append(name)
             continue
         src = payload / name
         if src.is_file():
             place(src, name)
+
+    # v10 puts these in a folder of its own. The folder is ours to remove, so it
+    # goes in the manifest's dirs rather than being inferred at uninstall time.
+    if (target / PAYLOAD_SUBDIR).is_dir() and PAYLOAD_SUBDIR not in created_dirs:
+        created_dirs.append(PAYLOAD_SUBDIR)
 
     for name in PAYLOAD_DIRS:
         src = payload / name
@@ -612,7 +640,7 @@ def install(target_dir, payload_root, filename=DEFAULT_PROXY, preserve_ini=True,
             continue
         dest = target / name
         if dest.exists() and name not in backups and name not in old_dirs:
-            backups[name] = _stash(target, dest, logger)
+            backups[name] = _stash(target, dest, logger, name)
         shutil.copytree(src, dest, dirs_exist_ok=True)
         if name not in created_dirs:
             created_dirs.append(name)
@@ -734,7 +762,7 @@ def uninstall(target_dir, remove_ini=True, logger=None):
             if path.is_file():
                 path.unlink()
                 removed.append(name)
-        for name in PAYLOAD_DIRS + ["DlssOverrides"]:
+        for name in PAYLOAD_DIRS + [PAYLOAD_SUBDIR, "DlssOverrides"]:
             path = target / name
             if path.is_dir():
                 shutil.rmtree(path, ignore_errors=True)
@@ -786,6 +814,9 @@ def restore_backups(target_dir, logger=None):
 
     stash = backup_dir(target)
     if stash.is_dir():
+        # The stash mirrors the game folder, so a top-level entry is restored
+        # whole: a displaced directory comes back as a directory, and a file that
+        # lived in a folder comes back to that folder.
         for item in sorted(stash.iterdir()):
             destination = target / item.name
             if destination.exists():
@@ -864,7 +895,7 @@ def verify_install(target_dir, payload_root):
         }
         if record["present"] and source.is_file():
             record["matches_payload"] = record["size"] == record["expected_size"]
-        if name == FFX_UPSCALER_DLL:
+        if Path(name).name == FFX_UPSCALER_DLL:
             selected = (manifest or {}).get("fsr4_build") or {}
             build = fsr4build.find(selected.get("id", "bundled"))
             record["matches_payload"] = bool(
@@ -884,7 +915,7 @@ def verify_install(target_dir, payload_root):
             "expected_size": 0,
         })
 
-    ffx = target / FFX_UPSCALER_DLL
+    ffx = ffx_upscaler_path(target)
     version = pe_file_version(ffx) if ffx.is_file() else None
     fsr4_capable = bool(version and version[:3] >= FSR4_MIN_SDK_VERSION[:3])
 

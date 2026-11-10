@@ -1,8 +1,12 @@
 """Shared constants for the Decky OptiScaler plugin."""
 
-OPTISCALER_VERSION = "0.9.4"
-PAYLOAD_ARCHIVE = "OptiScaler-0.9.4.7z"
-PAYLOAD_SHA256 = "575cb4df866116093df75af607e37fd70e10f5163e0f23fd5c804142e80ef0ad"
+OPTISCALER_VERSION = "10.0.0-pre1"
+#: The nightly this is pinned to. These are dated tags with a fixed asset name,
+#: so this stays a pinned artifact rather than a moving target — and the date is
+#: part of the name on purpose, so "which build is in this release" is answerable
+#: without trusting a "latest" pointer.
+PAYLOAD_ARCHIVE = "OptiScaler-10.0.0-pre1_20261110.7z"
+PAYLOAD_SHA256 = "a744775492ec0c0b0df9804b3b83918aea8b9deb56b3084b1efb81731242c69d"
 
 INI_NAME = "OptiScaler.ini"
 LOG_NAME = "OptiScaler.log"
@@ -127,21 +131,42 @@ PROXY_FILENAMES = [
 ]
 DEFAULT_PROXY = "dxgi.dll"
 
-# Support libraries copied next to the proxy dll.
+# Where v10 keeps its own libraries: everything except the proxy dll and the ini
+# lives in this folder instead of beside the executable. Paths in the lists below
+# are relative to the game folder, so they carry the prefix.
+PAYLOAD_SUBDIR = "OptiScaler"
+
+# Support libraries copied into the game folder's OptiScaler/ directory.
 PAYLOAD_FILES = [
-    "amd_fidelityfx_dx12.dll",
-    "amd_fidelityfx_framegeneration_dx12.dll",
-    "amd_fidelityfx_upscaler_dx12.dll",
-    "amd_fidelityfx_vk.dll",
-    "dlssg_to_fsr3_amd_is_better.dll",
-    "fakenvapi.dll",
-    "fakenvapi.ini",
-    "libxell.dll",
-    "libxess.dll",
-    "libxess_dx11.dll",
-    "libxess_fg.dll",
+    "OptiScaler/amd_fidelityfx_framegeneration_dx12.dll",
+    "OptiScaler/amd_fidelityfx_framegeneration_vk.dll",
+    "OptiScaler/amd_fidelityfx_loader_dx12.dll",
+    "OptiScaler/amd_fidelityfx_loader_vk.dll",
+    "OptiScaler/amd_fidelityfx_upscaler_dx12.dll",
+    "OptiScaler/amd_fidelityfx_upscaler_vk.dll",
+    "OptiScaler/dlssg_to_fsr3_amd_is_better.dll",
+    "OptiScaler/libxell.dll",
+    "OptiScaler/libxess.dll",
+    "OptiScaler/libxess_dx11.dll",
+    "OptiScaler/libxess_fg.dll",
+    "OptiScaler/Streamlined_fetcher_windows.bat",
+    # AMD's driver FSR libraries. Not part of the OptiScaler release — they are
+    # unpacked from FSR4_DRIVER_ARCHIVE into the payload before an install, and
+    # v10's FSR 4 path is what loads them from this folder.
+    "OptiScaler/amdxcffx64.dll",
+    "OptiScaler/amdvkffx64.dll",
 ]
-PAYLOAD_DIRS = ["D3D12_Optiscaler", "Licenses"]
+# D3D12_Optiscaler is inside PAYLOAD_SUBDIR now; Licenses stays at the root.
+PAYLOAD_DIRS = ["Licenses"]
+
+#: The two AMD driver libraries that carry the FSR 4 models v10 selects between.
+#: Provenance and hashes are recorded in notes.md; the archive is ours, not
+#: OptiScaler's, which is why it is pinned separately.
+FSR4_DRIVER_ARCHIVE = "FSR4-driver-libs.7z"
+FSR4_DRIVER_SHA256 = (
+    "f3121851eff9dbad71eb98bdadc852270297526335bd4d1bd3cf5e8a7f236ede"
+)
+FSR4_DRIVER_FILES = ["amdxcffx64.dll", "amdvkffx64.dll"]
 
 # Extra files OptiScaler or its helpers create at runtime; removed on uninstall.
 RUNTIME_ARTIFACTS = [
@@ -223,19 +248,20 @@ FSR4_SOURCE_HINTS = [
 # Both are pinned by hash because the hash is what decides which bytes go into a
 # game folder. The version resource only records what a file claims to be.
 FSR4_BUNDLED_BUILD_ID = "bundled"
-#: The released SDK build, identified by hash like any other. Not downloadable:
-#: it is already in bin/ and is what "reinstall" and "restore" put back.
+#: The build the release itself carries, identified by hash like any other. It is
+#: FSR Upscaling 4.1.2 — the same bytes as AMD's SDK 2.4 DLL — so there is no
+#: separate 4.1.2 entry below: the released build *is* 4.1.2.
 FSR4_BUNDLED_FILE_SHA256 = (
-    "d0dcccc74a43c44ba435b7a369b456e0970d8a4464e4bd683119b374f2c9fb46"
+    "aad4fccccb29084a655f9a4f9f613bd22c8c03fb4a0f8840148cc6543b4ccace"
 )
-FSR4_BUNDLED_FILE_BYTES = 28761864
+FSR4_BUNDLED_FILE_BYTES = 57664272
 FSR4_BUILDS = [
     {
         "id": "4.1.1b",
         "label": "4.1.1b (INT8, RDNA 2)",
         "note": "Community INT8 build with the RDNA2 ghosting fix. Reaches FSR 4 "
-                "on Van Gogh through the INT8 override, which AMD's own build "
-                "does not do there.",
+                "on Van Gogh through the INT8 override, which the released 4.1.2 "
+                "build does not do there.",
         "sources": [
             {
                 # Shipped in bin/, so there is no release to fetch it from
@@ -247,25 +273,6 @@ FSR4_BUILDS = [
         "file": "amd_fidelityfx_upscaler_dx12.dll",
         "file_sha256": "0dd77d9c78d1ef9bc330cf4697ab3ffe24bc1aa7850e4130263dc922107fbd75",
         "file_bytes": 34013696,
-        "reaches_fsr4_by": "int8",
-    },
-    {
-        "id": "4.1.2",
-        "label": "4.1.2 (Official AMD, no FSR 4 on Deck)",
-        "note": "AMD's own build from FSR SDK 2.4, reading 4.1.2.4555. Carries "
-                "the full and Lite INT8 models, but offers only FSR 3.1.6 on Van "
-                "Gogh — no FSR 4 entry — so the Deck cannot reach FSR 4 with it.",
-        "sources": [
-            {
-                # Shipped in bin/, so there is no release to fetch it from
-                "local": True,
-                "asset": "FSR4_4.1.2_INT8.zip",
-                "archive_sha256": "9d110066b446813fdf0068bc98d34596388ab16207d038e7107e058399b1ee33",
-            },
-        ],
-        "file": "amd_fidelityfx_upscaler_dx12.dll",
-        "file_sha256": "aad4fccccb29084a655f9a4f9f613bd22c8c03fb4a0f8840148cc6543b4ccace",
-        "file_bytes": 57664272,
         "reaches_fsr4_by": "int8",
     },
 ]
