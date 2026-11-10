@@ -16,7 +16,7 @@ OPTIONS = [
             "xess_12",
             "fsr21_12",
             "fsr22_12",
-            "fsr31_12",
+            "ffx_12",
             "dlss"
         ],
         "optionLabels": {
@@ -26,88 +26,77 @@ OPTIONS = [
             "xess_12": "xess_12 \u2014 dx11on12",
             "fsr21_12": "fsr21_12 \u2014 dx11on12",
             "fsr22_12": "fsr22_12 \u2014 dx11on12",
-            "fsr31_12": "fsr31_12 \u2014 dx11on12, FSR4"
+            "ffx_12": "ffx_12 \u2014 FSR 2.3; 3.1; 4.x"
         }
     },
     {
         "section": "Upscalers",
         "key": "Dx12Upscaler",
         "label": "Dx12 Upscaler",
-        "description": "Select Upscaler for Dx12 games",
-        "default": "xess",
-        "type": "enum",
-        "options": [
-            "xess",
-            "fsr21",
-            "fsr22",
-            "fsr31",
-            "dlss"
-        ],
-        "optionLabels": {
-            "fsr31": "fsr31 \u2014 also for FSR4"
-        }
+        "description": "Select Upscaler for Dx12 games xess, fsr21, fsr22, ffx (FSR 2.3; 3.1; 4.x), dlss or the name of a folder in the 'custom' folder",
+        "default": "DLSS when capable gpu, FSR4 when capable gpu, XeSS otherwise",
+        "type": "string"
     },
     {
         "section": "Upscalers",
         "key": "VulkanUpscaler",
         "label": "Vulkan Upscaler",
-        "description": "Select Upscaler for Vulkan games",
-        "default": "fsr22",
-        "type": "enum",
-        "options": [
-            "fsr21",
-            "fsr22",
-            "fsr31",
-            "xess",
-            "fsr21_12",
-            "fsr31_12",
-            "dlss"
-        ],
-        "optionLabels": {
-            "fsr21": "fsr21 \u2014 native VK",
-            "fsr22": "fsr22 \u2014 native VK",
-            "fsr31": "fsr31 \u2014 native VK",
-            "xess": "xess \u2014 native VK",
-            "fsr21_12": "fsr21_12 \u2014 VKon12",
-            "fsr31_12": "fsr31_12 \u2014 VKon12, FSR4"
-        }
+        "description": "Select Upscaler for Vulkan games fsr21 (native VK), fsr22 (native VK), ffx (native FSR 2.3; 3.1), xess (native VK), fsr21_12 (VKon12), ffx_12 (FSR 2.3; 3.1; 4.x), dlss - Default (auto) is fsr22 or the name of a folder in the 'custom' folder",
+        "default": "auto",
+        "type": "string"
     },
     {
         "section": "FrameGen",
         "key": "Enabled",
         "label": "Enabled",
-        "description": "Enables Frame Generation",
-        "default": "false",
-        "type": "bool"
+        "description": "Enables Frame Generation true or false - Default (auto) is false With dlssg FG Input, auto follows the game's DLSS FG setting (on/off and frame multiplier)",
+        "default": "auto",
+        "type": "string"
     },
     {
         "section": "FrameGen",
         "key": "FGInput",
         "label": "FG Input",
-        "description": "Selected FG Input/Source dlssg     - Can be used with any FG Output. Supports Hudless out of the box. Limited to games that use Streamline v2 and DLSSG nukems    - Limited to FSR 3 FG. Requires DLSSG in the game. Supports Hudless out of the box. Uses Streamline swapchain for pacing. fsrfg     - Can be used with any FG Output. Supports Hudless out of the box. upscaler  - Upscaler must be enabled. Can be used with any FG Output, but might be imperfect with some. To prevent UI glitching, Hudfix is required fsrfg30   - Can be used with any FG Output. Supports Hudless out of the box.",
+        "description": "Selected FG Input/Source dlssg    - Can be used with any FG Output. Supports Hudless out of the box. Limited to games that use Streamline and DLSSG nvngxfg  - Limited to FSR 3 FG (MFG with DLSS Enabler's dll). Requires DLSSG in the game. Supports Hudless out of the box. Uses Streamline swapchain for pacing. fsrfg    - Can be used with any FG Output. Supports Hudless out of the box. upscaler - Upscaler must be enabled. Can be used with any FG Output, but might be imperfect with some. To prevent UI glitching, Hudfix is required fsrfg30  - Can be used with any FG Output. Supports Hudless out of the box. xefg     - Can be used with any FG Output. Supports Hudless out of the box. With other outputs than xefg, the game's XeLL can go to any low latency output.",
         "default": "nofg",
         "type": "enum",
         "options": [
             "nofg",
             "dlssg",
-            "nukems",
+            "nvngxfg",
             "fsrfg",
             "upscaler",
-            "fsrfg30"
+            "fsrfg30",
+            "xefg"
         ]
     },
     {
         "section": "FrameGen",
         "key": "FGOutput",
         "label": "FG Output",
-        "description": "Selected FG Output fsrfg  - requires amd_fidelityfx_dx12.dll or amd_fidelityfx_loader_dx12.dll + amd_fidelityfx_framegeneration_dx12.dll xefg   - requires libxess_fg.dll, libxell.dll and latest fakenvapi dll nukems - requires dlssg_to_fsr3_amd_is_better.dll, AMD/Intel GPU users need to add fakenvapi as well",
+        "description": "Selected FG Output fsrfg          - requires amd_fidelityfx_dx12.dll OR amd_fidelityfx_loader_dx12.dll + amd_fidelityfx_framegeneration_dx12.dll xefg           - requires libxess_fg.dll and libxell.dll dlssg          - requires streamline dlls inside 'OptiScaler/streamline' folder + nvngx_dlssg.dll",
         "default": "nofg",
         "type": "enum",
         "options": [
             "nofg",
             "fsrfg",
             "xefg",
-            "nukems"
+            "dlssg"
+        ]
+    },
+    {
+        "section": "FrameGen",
+        "key": "FGNvngxReplacement",
+        "label": "FG Nvngx Replacement",
+        "description": "Selected FG Nvngx Replacement Nvngx FG is the lower level DLSSG provider. FGInput=NvngxFG or FGOutput=DLSSG need to be used for this setting to do anything For example to use Nukems in a game that only has upscaling: FGInput=upscaler, FGOutput=dlssg, FGNvngxReplacement=Nukems To use Arturs in a game that already supports DLSSG: FGInput=nvngxfg, FGOutput=auto, FGNvngxReplacement=Arturs None      - No replacement Nukems    - requires dlssg_to_fsr3_amd_is_better.dll, FSR 3 FG Arturs    - requires dlss-enabler-headless.dll, FSR 3 MFG FFX       - requires amd_fidelityfx_dx12.dll OR amd_fidelityfx_loader_dx12.dll + amd_fidelityfx_framegeneration_dx12.dll, FSRFG 3 or 4 Combo     - requires the same as FFX AND Arturs, uses FFX for middle frames and Enabler for the rest. Allow for combining FSR 4 FG and Enabler in 4x and 6x modes Or the name of a folder in the 'custom' folder that has a 'dlssg' folder with an nvngx_dlssg replacement dll",
+        "default": "Nukems",
+        "type": "enum",
+        "options": [
+            "None",
+            "Nukems",
+            "Arturs",
+            "FFX",
+            "Combo"
         ]
     },
     {
@@ -256,7 +245,7 @@ OPTIONS = [
         "key": "SkipResizeBuffers",
         "label": "Skip Resize Buffers",
         "description": "Skip ResizeBuffers call to swapchain If old and new descriptions are the same Prevents crashes after ResizeBuffers calls",
-        "default": "false",
+        "default": "true",
         "type": "bool"
     },
     {
@@ -274,6 +263,16 @@ OPTIONS = [
         "description": "Normally after ResizeBuffers call swapchain current index should be 0, when this option enabled OptiScaler will try to set swapchain index by calling present until index reaches 0 Might cause crashes or fix them",
         "default": "false",
         "type": "bool"
+    },
+    {
+        "section": "FrameGen",
+        "key": "HudCutoff",
+        "label": "Hud Cutoff",
+        "description": "Cutoffs transparency from UI to help with interpolation Only works with FSR FG Output and NvngxFG",
+        "default": "0.0",
+        "type": "float",
+        "min": 0.0,
+        "max": 1.0
     },
     {
         "section": "FSRFG",
@@ -313,6 +312,14 @@ OPTIONS = [
         "label": "Use Mutex For Swapchain",
         "description": "Enables usage of mutex for FG swapchain present calls Disabling it might improve performance in cost of stability",
         "default": "true",
+        "type": "bool"
+    },
+    {
+        "section": "FSRFG",
+        "key": "DisableFlipMetering",
+        "label": "Disable Flip Metering",
+        "description": "Disables AMD hardware flip metering requested by the FSR ML FG swapchain",
+        "default": "false",
         "type": "bool"
     },
     {
@@ -402,6 +409,64 @@ OPTIONS = [
     },
     {
         "section": "XeFG",
+        "key": "DynamicMFG",
+        "label": "Dynamic MFG",
+        "description": "Dynamic MFG: changes the multiplier on the fly to hit FramerateTargetDMFG, InterpolationCount sets the highest multiplier it may use (at 2X it turns FG on and off)",
+        "default": "false",
+        "type": "bool"
+    },
+    {
+        "section": "XeFG",
+        "key": "FramerateTargetDMFG",
+        "label": "Framerate Target DMFG",
+        "description": "Presented FPS Dynamic MFG aims for (10 or more), never above FramerateLimit",
+        "default": "0.0",
+        "type": "string"
+    },
+    {
+        "section": "XeFG",
+        "key": "RoundingDMFG",
+        "label": "Rounding DMFG",
+        "description": "Where FPS may land, as multipliers only come in steps: 0 = at most the target, 1 = around the target, 2 = at least the target",
+        "default": "1",
+        "type": "enum",
+        "options": [
+            "0",
+            "1",
+            "2"
+        ],
+        "optionLabels": {
+            "0": "at most the target",
+            "1": "around the target",
+            "2": "at least the target"
+        }
+    },
+    {
+        "section": "XeFG",
+        "key": "DynamicAllow1X",
+        "label": "Dynamic Allow1 X",
+        "description": "Lets Dynamic MFG turn frame generation off when the game alone gets close enough to the target",
+        "default": "true",
+        "type": "bool"
+    },
+    {
+        "section": "XeFG",
+        "key": "TargetAsCapDMFG",
+        "label": "Target As Cap DMFG",
+        "description": "Also limits FPS to FramerateTargetDMFG and uses the lowest multiplier that reaches it (RoundingDMFG and DynamicAllow1X don't apply)",
+        "default": "false",
+        "type": "bool"
+    },
+    {
+        "section": "XeFG",
+        "key": "OverrideInterpolationCount",
+        "label": "Override Interpolation Count",
+        "description": "For overriding the game's own XeFG count with FGInput=xefg, 0 = off",
+        "default": "no override",
+        "type": "string"
+    },
+    {
+        "section": "XeFG",
         "key": "DepthInverted",
         "label": "Depth Inverted",
         "description": "XeFG DepthInverted flag",
@@ -449,6 +514,68 @@ OPTIONS = [
         "type": "bool"
     },
     {
+        "section": "DLSSG",
+        "key": "InterpolationCount",
+        "label": "Interpolation Count",
+        "description": "Sets interpolated frame count (MFG)",
+        "default": "1",
+        "type": "enum",
+        "options": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5"
+        ],
+        "optionLabels": {
+            "1": "2X",
+            "2": "3X",
+            "3": "4X",
+            "4": "5X",
+            "5": "6X"
+        }
+    },
+    {
+        "section": "DLSSG",
+        "key": "UseGamesReflexMarkers",
+        "label": "Use Games Reflex Markers",
+        "description": "",
+        "default": "true",
+        "type": "bool"
+    },
+    {
+        "section": "DLSSG",
+        "key": "OverrideInterpolationCount",
+        "label": "Override Interpolation Count",
+        "description": "For overriding game's value sent to SL, could be Nvngx FG, could be noFG when someone uses real DLSSG",
+        "default": "no override",
+        "type": "string"
+    },
+    {
+        "section": "DLSSG",
+        "key": "OverrideForceDMFG",
+        "label": "Override Force DMFG",
+        "description": "Try to force Dynamic MFG in game's native DLSSG. Requires Nvidia Blackwell or any AMD/Intel (Nvngx FG) Requires Streamline 2.11",
+        "default": "false",
+        "type": "bool"
+    },
+    {
+        "section": "DLSSG",
+        "key": "ForceDMFG",
+        "label": "Force DMFG",
+        "description": "Force Dynamic MFG in Opti's own DLSSG output. Requires Nvidia Blackwell or any AMD/Intel (Nvngx FG) Requires Streamline 2.11",
+        "default": "false",
+        "type": "bool"
+    },
+    {
+        "section": "DLSSG",
+        "key": "FramerateTargetDMFG",
+        "label": "Framerate Target DMFG",
+        "description": "Sets the FPS target for dynamic multi frame generation When non-zero, you won't be able to manually adjust the FG multiplier Requires DMFG to be enabled",
+        "default": "0.0",
+        "type": "string"
+    },
+    {
         "section": "OptiFG",
         "key": "DisableHUDFix",
         "label": "Disable HUD Fix",
@@ -479,6 +606,22 @@ OPTIONS = [
         "label": "HUD Fix Extended",
         "description": "Extended HUDless checks for more image formats Might cause crash and slowdowns.",
         "default": "false",
+        "type": "bool"
+    },
+    {
+        "section": "OptiFG",
+        "key": "HUDFixUITexture",
+        "label": "HUD Fix UI Texture",
+        "description": "Vulkan, use the UI texture a game blends on the frame in its last compute pass",
+        "default": "true",
+        "type": "bool"
+    },
+    {
+        "section": "OptiFG",
+        "key": "HUDFixUIUnblend",
+        "label": "HUD Fix UI Unblend",
+        "description": "Vulkan, rebuild the hudless by removing that UI texture from the frame FSR-FG only gets the UI this way. Not used with DLSSG, it takes the UI texture directly",
+        "default": "true",
         "type": "bool"
     },
     {
@@ -565,7 +708,7 @@ OPTIONS = [
         "section": "OptiFG",
         "key": "HUDFixRelaxedResolutionCheck",
         "label": "HUD Fix Relaxed Resolution Check",
-        "description": "Relax resolution checks for Hudless by 32 pixels Helps games which use black borders for some resolutions and screen ratios (e.g. Witcher 3)",
+        "description": "Relax Hudless resolution checks by up to 5% per axis Helps games which use black borders for some resolutions and screen ratios (e.g. Witcher 3)",
         "default": "false",
         "type": "bool"
     },
@@ -575,6 +718,14 @@ OPTIONS = [
         "label": "HUD Fix Immediate",
         "description": "Enables capturing of resources before shader execution. Increase hudless capture chances but might cause capturing of unnecessary resources.",
         "default": "false",
+        "type": "bool"
+    },
+    {
+        "section": "OptiFG",
+        "key": "HUDFixPersistentBindings",
+        "label": "HUD Fix Persistent Bindings",
+        "description": "New advanced binding tracking system for Hudless resources Set false for old Hudfix behavior",
+        "default": "true",
         "type": "bool"
     },
     {
@@ -646,6 +797,14 @@ OPTIONS = [
         "key": "ResourceFlipOffset",
         "label": "Resource Flip Offset",
         "description": "Flip Depth & Velocity textures according to interpolation area This should fix OptiFG issues with Unity games",
+        "default": "false",
+        "type": "bool"
+    },
+    {
+        "section": "OptiFG",
+        "key": "HudlessFlip",
+        "label": "Hudless Flip",
+        "description": "Flip the HUDless texture, uses ResourceFlipOffset too Games can also request it with the Opti.Hudless.Flip NGX parameter",
         "default": "false",
         "type": "bool"
     },
@@ -781,7 +940,7 @@ OPTIONS = [
         "section": "Framerate",
         "key": "FramerateLimit",
         "label": "Framerate Limit",
-        "description": "Frame rate limit that uses Reflex, therefore the game has to support Reflex and have it enabled AMD users can use Fakenvapi to get this feature working",
+        "description": "Frame rate limit that uses Reflex whenever possible This includes any tech that replaces Reflex like XeLL or AntiLag 2",
         "default": "0.0",
         "type": "float"
     },
@@ -798,7 +957,7 @@ OPTIONS = [
         "key": "CreateHeaps",
         "label": "Create Heaps",
         "description": "Creating heap objects for XeSS before init",
-        "default": "false",
+        "default": "true",
         "type": "bool"
     },
     {
@@ -883,8 +1042,8 @@ OPTIONS = [
         "section": "FSR",
         "key": "UpscalerIndex",
         "label": "Upscaler Index",
-        "description": "Selects upscaler backend for FSR3.X/4",
-        "default": "0",
+        "description": "Selects upscaler backend for FSR3.X/4 Depending on GPU - Default (auto) is 0 - FSR4 for RDNA4, FSR3 for the rest Custom upscalers use UpscalerIndex in a section named after their folder",
+        "default": "auto",
         "type": "enum",
         "options": [
             "0",
@@ -979,19 +1138,25 @@ OPTIONS = [
     },
     {
         "section": "FSR",
-        "key": "Fsr4Update",
-        "label": "Fsr4 Update",
-        "description": "Enables updating of FSR3.X to FSR4",
-        "default": "auto",
-        "type": "bool"
-    },
-    {
-        "section": "FSR",
-        "key": "Fsr4ForceEnableInt8",
-        "label": "Fsr4 Force Enable Int8",
-        "description": "Enables INT8 model for all GPUs",
-        "default": "false",
-        "type": "bool"
+        "key": "Fsr4GpuSupport",
+        "label": "Fsr4 Gpu Support",
+        "description": "Overrides the FSR 4 support Opti detects for the GPU, can enable it on unsupported GPUs or limit it to INT8 Don't fool yourself when trying to force FP8 on actually unsupported GPUs, driver has a FSR 3 fallback INT8-2 is the RDNA2 model, INT8 Lite is a smaller model meant for APUs",
+        "default": "0",
+        "type": "enum",
+        "options": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+        ],
+        "optionLabels": {
+            "0": "No override",
+            "1": "FP8",
+            "2": "INT8",
+            "3": "INT8-2",
+            "4": "INT8 Lite"
+        }
     },
     {
         "section": "FSR",
@@ -1019,11 +1184,23 @@ OPTIONS = [
     },
     {
         "section": "FSR",
-        "key": "Fsr4EnableDebugView",
-        "label": "Fsr4 Enable Debug View",
-        "description": "Enable FSR4 Debug View visualization Might consume more VRAM",
-        "default": "false",
-        "type": "bool"
+        "key": "Fsr4Model",
+        "label": "Fsr4 Model",
+        "description": "Select FSR 4 model, can be changed in the menu while the game runs Only for FSR 4.1.1 and newer, FP8 needs RDNA 4 or RDNA 3 on Linux with the WMMA workaround and isn't available when Fsr4GpuSupport limits the GPU to INT8 INT8 RDNA2 and INT8 Lite are only in the Vulkan driver FSR (amdvkffx64) INT8 Lite only uses standard shader features so it can run on any GPU",
+        "default": "the best one the GPU supports",
+        "type": "enum",
+        "options": [
+            "0",
+            "1",
+            "2",
+            "3"
+        ],
+        "optionLabels": {
+            "0": "FP8",
+            "1": "INT8",
+            "2": "INT8 RDNA2",
+            "3": "INT8 Lite"
+        }
     },
     {
         "section": "FSR",
@@ -1069,7 +1246,7 @@ OPTIONS = [
         "section": "FSR",
         "key": "FsrAgilitySDKUpgrade",
         "label": "Fsr Agility SDK Upgrade",
-        "description": "Updates the DirectX 12 Agility SDK Enabling the use of FSR4 on Windows 10 in older titles like Cyberpunk 2077 You MUST copy D3D12_OptiScaler folder next to game's exe!",
+        "description": "Updates the DirectX 12 Agility SDK Enabling the use of FSR4 on Windows 10 in older titles like Cyberpunk 2077 You MUST copy D3D12_OptiScaler folder into the OptiScaler folder!",
         "default": "false",
         "type": "bool"
     },
@@ -1482,7 +1659,7 @@ OPTIONS = [
         "inheritedFrom": "RenderPresetPerformance"
     },
     {
-        "section": "Nukems",
+        "section": "NvngxFG",
         "key": "MakeDepthCopy",
         "label": "Make Depth Copy",
         "description": "Fix broken visuals in some games (mostly non-UE) on AMD GPUs under Windows Can cause stutters, so best to use only when necessary and mentioned",
@@ -1490,11 +1667,35 @@ OPTIONS = [
         "type": "bool"
     },
     {
+        "section": "NvngxFG",
+        "key": "DispatchFlags",
+        "label": "Dispatch Flags",
+        "description": "Any set of flags is accepted, for example 0x14100000 For reference https://github.com/artur-graniszewski/dlss-enabler-main/blob/a92464d468eb0d91ae17befa66c6bf6229f20b9f/Utils/DlssgProxy.cpp#L1033",
+        "default": "0x10000000 (IGNORE_UI_TEXTURE)",
+        "type": "string"
+    },
+    {
+        "section": "NvngxFG",
+        "key": "ShowDebug",
+        "label": "Show Debug",
+        "description": "Controls value set to DLSSG.ShowDebug Seems to be displaying just the interpolated frames",
+        "default": "false",
+        "type": "bool"
+    },
+    {
+        "section": "NvngxFG",
+        "key": "DisableHudless",
+        "label": "Disable Hudless",
+        "description": "Disable hudless resource being sent to DLSSG Might be required for some sets of DispatchFlags, see the reference",
+        "default": "false",
+        "type": "bool"
+    },
+    {
         "section": "Libraries",
         "key": "OptiDllPath",
         "label": "Opti Dll Path",
-        "description": "Main folder for OptiScaler to check dll files below",
-        "default": ".\\",
+        "description": "Relative paths in this section are based on OptiScaler's folder Main folder for OptiScaler to check dll files below",
+        "default": ".\\OptiScaler, or OptiScaler's folder if it doesn't exist",
         "type": "string"
     },
     {
@@ -1509,7 +1710,7 @@ OPTIONS = [
         "section": "Libraries",
         "key": "NvngxDlssPath",
         "label": "Nvngx Dlss Path",
-        "description": "nvngx_dlss.dll",
+        "description": "nvngx_dlss.dll or its folder",
         "default": "auto",
         "type": "string"
     },
@@ -1565,7 +1766,23 @@ OPTIONS = [
         "section": "Libraries",
         "key": "FfxVkPath",
         "label": "Ffx Vk Path",
-        "description": "amd_fidelityfx_vk.dll",
+        "description": "amd_fidelityfx_vk.dll or amd_fidelityfx_loader_vk.dll",
+        "default": "auto",
+        "type": "string"
+    },
+    {
+        "section": "Libraries",
+        "key": "FfxVkSRPath",
+        "label": "Ffx Vk SR Path",
+        "description": "amd_fidelityfx_upscaler_vk.dll",
+        "default": "auto",
+        "type": "string"
+    },
+    {
+        "section": "Libraries",
+        "key": "FfxVkFGPath",
+        "label": "Ffx Vk FG Path",
+        "description": "amd_fidelityfx_framegeneration_vk.dll",
         "default": "auto",
         "type": "string"
     },
@@ -1629,6 +1846,14 @@ OPTIONS = [
     },
     {
         "section": "Menu",
+        "key": "Height",
+        "label": "Height",
+        "description": "In-game ImGui menu height, before applying menu scale Can be changed by dragging the bottom right corner of the menu",
+        "default": "700.0",
+        "type": "string"
+    },
+    {
+        "section": "Menu",
         "key": "ShortcutKey",
         "label": "Shortcut Key",
         "description": "Shortcut key for opening menu For all keycode values, you can check this address Match Description with key Value https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes Integer value - Default (auto) is 0x2D which equals VK_INSERT/Insert key, previous default key was 0x24 -> VK_HOME/Home key If you want to use e.g. VK_BACK/Backspace key, that would be 0x08 - set ShortcutKey=0x08",
@@ -1687,11 +1912,11 @@ OPTIONS = [
         "section": "Menu",
         "key": "FpsScale",
         "label": "Fps Scale",
-        "description": "In-game FPS Overlay scale",
+        "description": "In-game FPS Overlay scale, independent from the menu scale when set",
         "default": "using the same scale as menu",
         "type": "float",
         "min": 0.5,
-        "max": 2.0
+        "max": 3.0
     },
     {
         "section": "Menu",
@@ -1713,10 +1938,31 @@ OPTIONS = [
     },
     {
         "section": "Menu",
+        "key": "FpsOverlayPosX",
+        "label": "Fps Overlay Pos X",
+        "description": "FPS overlay position when FpsOverlayPos is 6, 0.0 is left/top and 1.0 right/bottom of the screen",
+        "default": "0.0",
+        "type": "float",
+        "min": 0.0,
+        "max": 1.0
+    },
+    {
+        "section": "Menu",
+        "key": "FpsOverlayPosY",
+        "label": "Fps Overlay Pos Y",
+        "description": "",
+        "type": "float",
+        "min": 0.0,
+        "max": 1.0,
+        "default": "auto",
+        "inheritedFrom": "FpsOverlayPosX"
+    },
+    {
+        "section": "Menu",
         "key": "FpsOverlayType",
         "label": "Fps Overlay Type",
-        "description": "FPS overlay type",
-        "default": "0",
+        "description": "FPS overlay type Each type before Custom is a preset of the rows, Custom shows FpsOverlayRows 7 = Custom",
+        "default": "5",
         "type": "enum",
         "options": [
             "0",
@@ -1757,13 +2003,223 @@ OPTIONS = [
     },
     {
         "section": "Menu",
+        "key": "FpsOverlayShowRatio",
+        "label": "Fps Overlay Show Ratio",
+        "description": "Shows the current upscale ratio (and render -> output resolution) in the FPS overlay types from Simple to Low latency timings, Custom has the upscale row for it. Updated in real time, so dynamic resolution changes are visible",
+        "default": "false",
+        "type": "bool"
+    },
+    {
+        "section": "Menu",
+        "key": "FpsOverlayCompactLabels",
+        "label": "Fps Overlay Compact Labels",
+        "description": "Shorter labels in the FPS overlay (UPS, FT, UT...), for a narrower overlay",
+        "default": "false",
+        "type": "bool"
+    },
+    {
+        "section": "Menu",
+        "key": "FpsOverlayHideAverages",
+        "label": "Fps Overlay Hide Averages",
+        "description": "Only the current values in the FPS overlay, without the averages next to FPS, frame time and upscaler time",
+        "default": "false",
+        "type": "bool"
+    },
+    {
+        "section": "Menu",
+        "key": "FpsOverlayRows",
+        "label": "Fps Overlay Rows",
+        "description": "Rows of the Custom FPS overlay type in their order, comma separated, a row starting with - is hidden: fps, upscale, frametime, frametimegraph, upscaler, upscalergraph, lowlatency",
+        "default": "the rows of Full + Graph",
+        "type": "string"
+    },
+    {
+        "section": "Menu",
+        "key": "FpsOverlayFpsRow",
+        "label": "Fps Overlay Fps Row",
+        "description": "What the FPS row of the Custom FPS overlay type shows with the FPS The API, frame generation and upscaler are shown with 1 and 2",
+        "default": "auto",
+        "type": "enum",
+        "options": [
+            "0",
+            "1",
+            "2"
+        ],
+        "optionLabels": {
+            "0": "Just FPS",
+            "1": "Frame time",
+            "2": "Average FPS - Default (auto) is 2"
+        }
+    },
+    {
+        "section": "Menu",
+        "key": "FpsOverlayRowSpacing",
+        "label": "Fps Overlay Row Spacing",
+        "description": "Space between the FPS overlay rows in pixels, before FpsScale",
+        "default": "twice the item spacing",
+        "type": "float",
+        "min": 0.0,
+        "max": 32.0
+    },
+    {
+        "section": "Menu",
+        "key": "FpsOverlayUpdateInterval",
+        "label": "Fps Overlay Update Interval",
+        "description": "How often the FPS overlay's FPS, frame time and upscaler time change in milliseconds, averaged in between so they can be read. 0 updates them every frame",
+        "default": "0.0",
+        "type": "float",
+        "min": 0.0,
+        "max": 1000.0
+    },
+    {
+        "section": "Menu",
         "key": "FpsOverlayAlpha",
         "label": "Fps Overlay Alpha",
         "description": "FPS Overlay background alpha",
+        "default": "0.45",
+        "type": "float",
+        "min": 0.0,
+        "max": 1.0
+    },
+    {
+        "section": "Menu",
+        "key": "FpsOverlayGraphHeight",
+        "label": "Fps Overlay Graph Height",
+        "description": "FPS Overlay graph height multiplier",
+        "default": "1.0",
+        "type": "float",
+        "min": 0.5,
+        "max": 3.0
+    },
+    {
+        "section": "Menu",
+        "key": "FpsOverlayFont",
+        "label": "Fps Overlay Font",
+        "description": "FPS Overlay font, a file name in C:\\Windows\\Fonts (e.g. segoeui.ttf) or a full path",
+        "default": "the menu font",
+        "type": "string"
+    },
+    {
+        "section": "Menu",
+        "key": "FpsOverlayFontSize",
+        "label": "Fps Overlay Font Size",
+        "description": "FPS Overlay font size in pixels, before FpsScale",
+        "default": "the menu font size",
+        "type": "float",
+        "min": 8.0,
+        "max": 48.0
+    },
+    {
+        "section": "Menu",
+        "key": "FpsOverlayLetterSpacing",
+        "label": "Fps Overlay Letter Spacing",
+        "description": "FPS Overlay extra horizontal spacing between characters in pixels",
+        "default": "0.0",
+        "type": "float",
+        "min": -2.0,
+        "max": 8.0
+    },
+    {
+        "section": "Menu",
+        "key": "FpsOverlayLabelScale",
+        "label": "Fps Overlay Label Scale",
+        "description": "FPS Overlay size of the labels (names like FPS:) and values (numbers), multiplies the font size",
+        "default": "1.0",
+        "type": "float",
+        "min": 0.5,
+        "max": 2.0
+    },
+    {
+        "section": "Menu",
+        "key": "FpsOverlayValueScale",
+        "label": "Fps Overlay Value Scale",
+        "description": "",
+        "type": "float",
+        "min": 0.5,
+        "max": 2.0,
+        "default": "auto",
+        "inheritedFrom": "FpsOverlayLabelScale"
+    },
+    {
+        "section": "Menu",
+        "key": "FpsOverlayLabelColor",
+        "label": "Fps Overlay Label Color",
+        "description": "FPS Overlay colors as 0xRRGGBB, used when OverlaysUseTheme is false",
+        "default": "0xeaeaea for labels, 0xffffff for values, 0x00ff00 for graph and 0x000000 for background",
+        "type": "string"
+    },
+    {
+        "section": "Menu",
+        "key": "FpsOverlayValueColor",
+        "label": "Fps Overlay Value Color",
+        "description": "",
+        "type": "string",
+        "default": "auto",
+        "inheritedFrom": "FpsOverlayLabelColor"
+    },
+    {
+        "section": "Menu",
+        "key": "FpsOverlayGraphColor",
+        "label": "Fps Overlay Graph Color",
+        "description": "",
+        "type": "string",
+        "default": "auto",
+        "inheritedFrom": "FpsOverlayValueColor"
+    },
+    {
+        "section": "Menu",
+        "key": "FpsOverlayBGColor",
+        "label": "Fps Overlay BG Color",
+        "description": "",
+        "type": "string",
+        "default": "auto",
+        "inheritedFrom": "FpsOverlayGraphColor"
+    },
+    {
+        "section": "Menu",
+        "key": "FpsOverlayShadow",
+        "label": "Fps Overlay Shadow",
+        "description": "FPS Overlay text shadow",
+        "default": "1",
+        "type": "enum",
+        "options": [
+            "0",
+            "1",
+            "2"
+        ],
+        "optionLabels": {
+            "0": "Off",
+            "1": "Shadow",
+            "2": "Outline - Default (auto) is 1"
+        }
+    },
+    {
+        "section": "Menu",
+        "key": "FpsOverlayShadowStrength",
+        "label": "Fps Overlay Shadow Strength",
+        "description": "FPS Overlay text shadow thickness and darkness, outline thickness",
         "default": "0.4",
         "type": "float",
         "min": 0.0,
         "max": 1.0
+    },
+    {
+        "section": "Menu",
+        "key": "FpsOverlayShadowColor",
+        "label": "Fps Overlay Shadow Color",
+        "description": "FPS Overlay text shadow or outline color as 0xRRGGBB",
+        "default": "0x000000",
+        "type": "string"
+    },
+    {
+        "section": "Menu",
+        "key": "FpsOverlayRounding",
+        "label": "Fps Overlay Rounding",
+        "description": "FPS Overlay corner radius in pixels, 0 is square",
+        "default": "2.0",
+        "type": "float",
+        "min": 0.0,
+        "max": 16.0
     },
     {
         "section": "Menu",
@@ -1772,6 +2228,24 @@ OPTIONS = [
         "description": "Shortcut key for FG enabled/disabled https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes Integer value - Default (auto) is 0x23 -> VK_END/End key",
         "default": "auto",
         "type": "keycode"
+    },
+    {
+        "section": "Menu",
+        "key": "Rounding",
+        "label": "Rounding",
+        "description": "Menu corner radius in pixels, 0 is square",
+        "default": "2.0",
+        "type": "float",
+        "min": 0.0,
+        "max": 16.0
+    },
+    {
+        "section": "Menu",
+        "key": "OverlaysUseTheme",
+        "label": "Overlays Use Theme",
+        "description": "Overlays uses the theme colors",
+        "default": "false",
+        "type": "bool"
     },
     {
         "section": "Menu",
@@ -1837,7 +2311,23 @@ OPTIONS = [
         "section": "Menu",
         "key": "BGColorA",
         "label": "BG Color A",
-        "description": "Background alpha for the menu 0 is transparent and 1 is opaque 0.0 to 1.0 - Default (auto) 0.99",
+        "description": "Background alpha for the menu 0 is transparent and 1 is opaque 0.0 to 1.0 - Default (auto) 0.93",
+        "default": "auto",
+        "type": "string"
+    },
+    {
+        "section": "Menu",
+        "key": "Blur",
+        "label": "Blur",
+        "description": "Blur the game image behind the menu, visible when background alpha is below 1 Only supported by the overlay menu (DirectX 11, DirectX 12 and Vulkan)",
+        "default": "auto",
+        "type": "bool"
+    },
+    {
+        "section": "Menu",
+        "key": "BlurStrength",
+        "label": "Blur Strength",
+        "description": "Strength of the blur behind the menu 0.0 to 4.0 - Default (auto) 1.0",
         "default": "auto",
         "type": "string"
     },
@@ -2037,17 +2527,73 @@ OPTIONS = [
         "section": "Plugins",
         "key": "LoadReshade",
         "label": "Load Reshade",
-        "description": "Loads Reshade64.dll from game's exe folder Rename Reshade dll to ReShade64.dll, put next to OptiScaler and set to true",
+        "description": "Loads Reshade64.dll from game's exe folder Rename Reshade dll to ReShade64.dll, put next to OptiScaler and set to true d3d12-ReShade64.dll is also accepted (ReShade checks for \"d3d12\" in its name)",
         "default": "false",
         "type": "bool"
     },
     {
-        "section": "NvApi",
-        "key": "OverrideNvapiDll",
-        "label": "Override Nvapi Dll",
-        "description": "Override loading of nvapi64.dll",
+        "section": "Plugins",
+        "key": "LoadCustomAmdxc64OnRdna2",
+        "label": "Load Custom Amdxc64 On Rdna2",
+        "description": "Loads custom amdxc64.dll for all detected RDNA 2 GPUs OptiScaler loads it from OptiDllPath, e.g. \".\\OptiScaler\\amdxc64.dll\"",
         "default": "false",
         "type": "bool"
+    },
+    {
+        "section": "fakenvapi",
+        "key": "UseFakenvapi",
+        "label": "Use Fakenvapi",
+        "description": "Use fakenvapi when nvapi64.dll is missing. fakenvapi replaces nvapi calls allowing for features like AntiLag 2 or XeLL to replace Reflex Sometimes also required for DLSS/DLSSG to show up",
+        "default": "true",
+        "type": "bool"
+    },
+    {
+        "section": "fakenvapi",
+        "key": "ForceXeLL",
+        "label": "Force Xe LL",
+        "description": "Allow XeLL to work without FG on non-Intel cards, Requires updated libxell + libxess_fg Disables FG options",
+        "default": "false",
+        "type": "bool"
+    },
+    {
+        "section": "fakenvapi",
+        "key": "ForceLatencyFlex",
+        "label": "Force Latency Flex",
+        "description": "Tries to use LatencyFlex even when better options are avaliable Doesn't take effect when using XeFG",
+        "default": "false",
+        "type": "bool"
+    },
+    {
+        "section": "fakenvapi",
+        "key": "LatencyFlexMode",
+        "label": "Latency Flex Mode",
+        "description": "Controls how latencyflex works 0 = conservative 1 = aggressive, will improve latency but in some cases will lower fps more than expected 2 = use reflex frame ids, some games are not compatible (i.e. cyberpunk) and will fallback to aggressive",
+        "default": "0",
+        "type": "string"
+    },
+    {
+        "section": "fakenvapi",
+        "key": "ForceReflex",
+        "label": "Force Reflex",
+        "description": "Force Reflex state, useful for games that only enable Reflex when using DLSSG without a separate toggle for Reflex 0 - follow in-game setting, 1 - force disable, 2 - force enable",
+        "default": "0",
+        "type": "string"
+    },
+    {
+        "section": "fakenvapi",
+        "key": "LowLatencyInput",
+        "label": "Low Latency Input",
+        "description": "Low latency input, the game's low latency that OptiScaler translates 2 - AntiLag 2, 3 - Reflex, 4 - XeLL, 5 - UE low latency The game's own XeFG (also the XeFG input to XeFG output) keeps the game's XeLL, only the FPS limit is OptiScaler's Default (auto) uses the best one the game sends: Reflex, XeLL when enabled in the game, AntiLag 2, UE low latency, XeLL when not enabled in the game (XeLL first with the XeFG input while the game has it enabled, AntiLag 2 first while the game's FSR-FG reports its frames through it)",
+        "default": "auto",
+        "type": "string"
+    },
+    {
+        "section": "fakenvapi",
+        "key": "LowLatencyOutput",
+        "label": "Low Latency Output",
+        "description": "Low latency output, what the input is translated to 2 - LatencyFlex, 3 - AntiLag 2, 4 - XeLL, 6 - Reflex (Nvidia), 7 - FPS Limiter (only limits the FPS) OptiScaler's XeFG always uses XeLL, the game's own XeFG its own XeLL",
+        "default": "the best one for your current setup",
+        "type": "string"
     },
     {
         "section": "NvApi",
@@ -2059,9 +2605,9 @@ OPTIONS = [
     },
     {
         "section": "NvApi",
-        "key": "DontUseFakenvapiForXeLLOnNvidia",
-        "label": "Dont Use Fakenvapi For Xe LL On Nvidia",
-        "description": "Do not use fakenvapi for converting Reflex calls to XeLL calls on Nvidia GPUs",
+        "key": "DisableOTA",
+        "label": "Disable OTA",
+        "description": "Disables OTA of streamline plugins Set to true if you are having errors caused by OTA",
         "default": "false",
         "type": "bool"
     },
@@ -2104,6 +2650,14 @@ OPTIONS = [
         "description": "Only hook ntdll.dll methods, skip kernel32.dll and kernelbase.dll hooks",
         "default": "true",
         "type": "bool"
+    },
+    {
+        "section": "Sharpness",
+        "key": "Shader",
+        "label": "Shader",
+        "description": "Options are: RCAS - AMD's Robust Contrast-Adaptive Sharpening DA - Enables Depth-based edge detection for sharpening. Reduces sharpening across object boundaries to prevent halos and artifacts. The farther away is the object, the more sharpening is applied (limited to 1.0) Recommended for scenes with complex geometry or upscaling. LCDA - Local contrast version of the above DA",
+        "default": "rcas",
+        "type": "string"
     },
     {
         "section": "Sharpness",
@@ -2227,10 +2781,10 @@ OPTIONS = [
         "section": "CAS",
         "key": "Contrast",
         "label": "Contrast",
-        "description": "Contrast based sharpening value Higher values increases sharpness at high contrast areas. High values might cause graphical GLITCHES when used with high sharpness values !!!",
-        "default": "-0.3",
+        "description": "Contrast based sharpening value Lowers sharpness at high contrast areas. High values might cause graphical GLITCHES when used with high sharpness values !!!",
+        "default": "0.0",
         "type": "float",
-        "min": -2.0,
+        "min": 0.0,
         "max": 2.0
     },
     {
@@ -2238,30 +2792,6 @@ OPTIONS = [
         "key": "SharpenerDebug",
         "label": "Sharpener Debug",
         "description": "Enable Debug Highlighting for Motion/DA Sharpening Reddish hue for added, greenish for reduced sharpness Blue tint for detected edges in Depth Aware sharpening",
-        "default": "false",
-        "type": "bool"
-    },
-    {
-        "section": "CAS",
-        "key": "UseDepthAwareSharpen",
-        "label": "Use Depth Aware Sharpen",
-        "description": "Enables Depth-Aware RCAS sharpening. Reduces sharpening across object boundaries to prevent halos and artifacts. The farther away is the object, the more sharpening is applied (limited to 1.0) Recommended for scenes with complex geometry or upscaling.",
-        "default": "false",
-        "type": "bool"
-    },
-    {
-        "section": "CAS",
-        "key": "UseDASDepthAwareSharpen",
-        "label": "Use DAS Depth Aware Sharpen",
-        "description": "Enables Depth-Aware Directional Adaptive Sharpening (DAS). Reduces sharpening across object boundaries to prevent halos and artifacts. The farther away is the object, the more sharpening is applied (limited to 1.0) Recommended for scenes with complex geometry or upscaling.",
-        "default": "false",
-        "type": "bool"
-    },
-    {
-        "section": "CAS",
-        "key": "DADepthIsLinear",
-        "label": "DA Depth Is Linear",
-        "description": "Indicates whether the input depth is already linear. Enable if depth represents real distance (linear space). Disable if using hardware depth (non-linear), which will be linearized in the shader. Incorrect setting will cause broken edge detection.",
         "default": "false",
         "type": "bool"
     },
@@ -2292,6 +2822,84 @@ OPTIONS = [
         "description": "Clamps the final image to the [0, 1] range. Prevents overshoot artifacts such as bright halos or negative colors. Recommended for LDR pipelines; optional for HDR depending on tone-mapping.",
         "default": "false",
         "type": "bool"
+    },
+    {
+        "section": "Magnifier",
+        "key": "Enabled",
+        "label": "Enabled",
+        "description": "Enables magnifier By default, only visible when menu is visible and follows the cursor",
+        "default": "false",
+        "type": "bool"
+    },
+    {
+        "section": "Magnifier",
+        "key": "Size",
+        "label": "Size",
+        "description": "Radius of the magnifier at % of screen height",
+        "default": "15.0",
+        "type": "float"
+    },
+    {
+        "section": "Magnifier",
+        "key": "ZoomFactor",
+        "label": "Zoom Factor",
+        "description": "The zoom factor of the magnifier",
+        "default": "4",
+        "type": "int",
+        "min": 2,
+        "max": 20
+    },
+    {
+        "section": "Magnifier",
+        "key": "BorderSize",
+        "label": "Border Size",
+        "description": "Black border width of the magnifier, as % of screen height",
+        "default": "0.3",
+        "type": "float",
+        "min": 0.0,
+        "max": 2.0
+    },
+    {
+        "section": "Magnifier",
+        "key": "CursorOffsetX",
+        "label": "Cursor Offset X",
+        "description": "Position offset of the magnifier in relation to the mouse position, in pixels",
+        "default": "0",
+        "type": "int",
+        "min": -1000,
+        "max": 1000
+    },
+    {
+        "section": "Magnifier",
+        "key": "CursorOffsetY",
+        "label": "Cursor Offset Y",
+        "description": "",
+        "type": "int",
+        "min": -1000,
+        "max": 1000,
+        "default": "auto",
+        "inheritedFrom": "CursorOffsetX"
+    },
+    {
+        "section": "Magnifier",
+        "key": "StaticPosX",
+        "label": "Static Pos X",
+        "description": "Static position of the magnifier, as % of screen Having both values set will switch the magnifier to a static mode In static mode, the magnifier is always visible, even when the menu is not",
+        "default": "none",
+        "type": "int",
+        "min": 0,
+        "max": 100
+    },
+    {
+        "section": "Magnifier",
+        "key": "StaticPosY",
+        "label": "Static Pos Y",
+        "description": "",
+        "type": "int",
+        "min": 0,
+        "max": 100,
+        "default": "auto",
+        "inheritedFrom": "StaticPosX"
     },
     {
         "section": "Log",
@@ -2390,6 +2998,14 @@ OPTIONS = [
         "max": 8
     },
     {
+        "section": "Log",
+        "key": "CreateDumps",
+        "label": "Create Dumps",
+        "description": "Writes a dump next to the log (or to the temp folder when it can't) on a crash or when the game ends itself with an error code. Crashes are caught before the game's own handlers, a game that handles them itself can get a dump that isn't a crash (at most 3)",
+        "default": "false",
+        "type": "bool"
+    },
+    {
         "section": "InitFlags",
         "key": "AutoExposure",
         "label": "Auto Exposure",
@@ -2427,6 +3043,14 @@ OPTIONS = [
         "label": "Display Resolution",
         "description": "Force add HIGH_RES_MV flag to init flags",
         "default": "DLSS value",
+        "type": "bool"
+    },
+    {
+        "section": "InitFlags",
+        "key": "DynamicResolution",
+        "label": "Dynamic Resolution",
+        "description": "Force add ENABLE_DYNAMIC_RESOLUTION flag to init flags, only used by FSR",
+        "default": "game's FSR value, false with other inputs",
         "type": "bool"
     },
     {
@@ -2579,6 +3203,26 @@ OPTIONS = [
         "type": "int",
         "min": 0,
         "max": 3
+    },
+    {
+        "section": "V-Sync",
+        "key": "VulkanPresentMode",
+        "label": "Vulkan Present Mode",
+        "description": "Vulkan present mode override, VkPresentModeKHR value. Can be changed live from the menu. 0 = Immediate (V-Sync Off), 1 = Mailbox, 2 = FIFO (V-Sync On), 3 = FIFO Relaxed,",
+        "default": "the game's",
+        "type": "enum",
+        "options": [
+            "0",
+            "1",
+            "2",
+            "3"
+        ],
+        "optionLabels": {
+            "0": "Immediate (V-Sync Off)",
+            "1": "Mailbox",
+            "2": "FIFO (V-Sync On)",
+            "3": "FIFO Relaxed"
+        }
     },
     {
         "section": "Anisotropy",

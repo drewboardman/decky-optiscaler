@@ -367,9 +367,12 @@ def _replace_fsr4(target, source, recorded, enable_int8=False):
                     raise FileNotFoundError("OptiScaler.ini not found")
                 ini = IniFile(staging / INI_NAME)
                 changes = {
-                    "Upscalers": {"Dx12Upscaler": "fsr31", "Dx11Upscaler": "fsr31_12",
-                                  "VulkanUpscaler": "fsr31_12"},
-                    "FSR": {"Fsr4Update": "auto", "Fsr4ForceEnableInt8": "true",
+                    "Upscalers": {"Dx12Upscaler": "ffx", "Dx11Upscaler": "ffx_12",
+                                  "VulkanUpscaler": "ffx_12"},
+                    # v10 does not merely allow FSR 4, it picks the model. 4 on
+                    # the GPU-support override plus 3 on the model itself is how
+                    # the Lite network runs on hardware AMD does not list.
+                    "FSR": {"Fsr4GpuSupport": "4", "Fsr4Model": "3",
                             "UpscalerIndex": "0", "Fsr4Preset": "auto"},
                 }
                 for section, values in changes.items():

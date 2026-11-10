@@ -199,9 +199,11 @@ async def run():
         check("multiplier labelled 2X/3X/4X",
               multiplier.get("optionLabels") == {"1": "2X", "2": "3X", "3": "4X"})
         dx12 = by_id[("Upscalers", "Dx12Upscaler")]
-        check("fsr31 documented as also serving FSR4",
-              "FSR4" in (dx12.get("optionLabels") or {}).get("fsr31", ""),
-              (dx12.get("optionLabels") or {}).get("fsr31"))
+        model = by_id[("FSR", "Fsr4Model")]
+        check("v10's model selector survived generation",
+              model["type"] == "enum"
+              and (model.get("optionLabels") or {}).get("3") == "INT8 Lite",
+              model.get("optionLabels"))
 
         print("\nInstall / uninstall round trip")
         target = Path(detail["target"])
@@ -375,7 +377,13 @@ async def run():
 
         print("\nConfiguration")
         config = await service.read_config(str(target))
-        check("ini parsed", config["ok"] and len(config["values"]) == 34, len(config["values"]))
+        # Tied to the ini that is actually installed rather than to a number, so
+        # a runtime that adds or drops a section moves this with it.
+        sections = sum(1 for line in (target / "OptiScaler.ini")
+                       .read_text(encoding="utf-8").splitlines()
+                       if line.startswith("["))
+        check("ini parsed", config["ok"] and len(config["values"]) == sections,
+              f"{len(config['values'])} of {sections}")
         before = (target / "OptiScaler.ini").read_text(encoding="utf-8")
 
         write = await service.write_config(str(target), [
@@ -2606,24 +2614,24 @@ def check_option_validation():
     # Everything else keeps the closed-set treatment: these lists are the
     # backends OptiScaler has, not a snapshot of one runtime's answer.
     dx12 = SCHEMA[("Upscalers", "Dx12Upscaler")]
-    check("a real backend id is accepted", valid(dx12, "fsr31"))
-    check("an id OptiScaler does not have is not", not valid(dx12, "fsr31_12"))
+    # v10 documents the backend as an open list — a folder name under 'custom' is
+    # a valid value — so it is carried as a string, not a closed set.
+    check("a real backend id is accepted", valid(dx12, "ffx"))
+    check("and its interop twin too", valid(dx12, "ffx_12"))
 
     # Basic mode's presets all have to survive the writer, or picking one would
     # half-apply: some keys written, others silently dropped.
     from optiscaler.schema import option as schema_option
     presets = {
-        "fsr4": [("Upscalers", "Dx12Upscaler", "fsr31"), ("Upscalers", "Dx11Upscaler", "fsr31_12"),
-                 ("Upscalers", "VulkanUpscaler", "fsr31_12"), ("FSR", "Fsr4Update", "true"),
-                 ("FSR", "UpscalerIndex", "0"), ("FSR", "Fsr4ForceEnableInt8", "false")],
-        "fsr4-int8": [("Upscalers", "Dx12Upscaler", "fsr31"),
-                      ("Upscalers", "Dx11Upscaler", "fsr31_12"),
-                      ("Upscalers", "VulkanUpscaler", "fsr31_12"),
-                      ("FSR", "Fsr4Update", "auto"), ("FSR", "Fsr4ForceEnableInt8", "true"),
-                      ("FSR", "UpscalerIndex", "0")],
-        "fsr31": [("Upscalers", "Dx12Upscaler", "fsr31"), ("Upscalers", "Dx11Upscaler", "fsr31"),
-                  ("Upscalers", "VulkanUpscaler", "fsr31"), ("FSR", "Fsr4Update", "false"),
-                  ("FSR", "UpscalerIndex", "1"), ("FSR", "Fsr4ForceEnableInt8", "false")],
+        "fsr4": [("Upscalers", "Dx12Upscaler", "ffx"), ("Upscalers", "Dx11Upscaler", "ffx_12"),
+                 ("Upscalers", "VulkanUpscaler", "ffx_12"), ("FSR", "UpscalerIndex", "0")],
+        "fsr4-int8": [("Upscalers", "Dx12Upscaler", "ffx"),
+                      ("Upscalers", "Dx11Upscaler", "ffx_12"),
+                      ("Upscalers", "VulkanUpscaler", "ffx_12"),
+                      ("FSR", "Fsr4GpuSupport", "4"), ("FSR", "Fsr4Model", "3"),
+                      ("FSR", "UpscalerIndex", "0"), ("FSR", "Fsr4Preset", "auto")],
+        "fsr31": [("Upscalers", "Dx12Upscaler", "ffx"), ("Upscalers", "Dx11Upscaler", "ffx_12"),
+                  ("Upscalers", "VulkanUpscaler", "ffx_12"), ("FSR", "UpscalerIndex", "1")],
         "xess": [("Upscalers", "Dx12Upscaler", "xess"), ("Upscalers", "Dx11Upscaler", "xess_12"),
                  ("Upscalers", "VulkanUpscaler", "xess")],
     }
