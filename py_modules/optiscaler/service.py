@@ -12,6 +12,7 @@ from .constants import (
     FSR4_DRIVER_FILES,
     FSR4_DRIVER_SHA256,
     INI_NAME,
+    LIVE_ASI_ENABLED,
     OPTIPATCHER_NAME,
     OPTIPATCHER_VERSION,
     OPTISCALER_VERSION,
@@ -876,6 +877,8 @@ class OptiScalerService:
     # -- live control ----------------------------------------------------
     def live_asi_path(self):
         """The compiled live-control plugin shipped inside this plugin."""
+        if not LIVE_ASI_ENABLED:
+            return None
         candidate = self.plugin_dir / "bin" / live.ASI_NAME
         return str(candidate) if candidate.is_file() else None
 

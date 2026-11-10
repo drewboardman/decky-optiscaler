@@ -258,7 +258,14 @@ async def run():
         # Live control has to arrive with the install, and OptiScaler has to be
         # told to load it -- an .asi it never looks for would do nothing.
         from optiscaler import live as live_mod
-        asi_shipped = (ROOT / "bin" / live_mod.ASI_NAME).is_file()
+        from optiscaler.constants import LIVE_ASI_ENABLED
+        # The ASI mirrors the runtime's structs, and that mirror is still 0.9.4,
+        # so this build withholds it. Re-vendoring it flips the constant and the
+        # assertions below start running again.
+        if not LIVE_ASI_ENABLED:
+            check("live control is withheld until the asi is re-vendored",
+                  not (target / "plugins" / live_mod.ASI_NAME).is_file())
+        asi_shipped = (ROOT / "bin" / live_mod.ASI_NAME).is_file() and LIVE_ASI_ENABLED
         if asi_shipped:
             check("live-control asi installed alongside OptiScaler",
                   (target / "plugins" / live_mod.ASI_NAME).is_file())

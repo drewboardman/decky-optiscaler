@@ -5,6 +5,35 @@ Newest first. Each release ships `Decky OptiScaler.zip` for Decky Loader's
 
 ## [Unreleased]
 
+## [0.0.7-steamdeck.6] - 2026-11-10
+
+### Changed
+
+- **The bundled runtime is OptiScaler v10** (the dated nightly
+  `OptiScaler_v10.0.0-pre1_20261110`), pinned by hash like any other artifact.
+  v10 keeps its libraries in `<game>/OptiScaler/` instead of beside the
+  executable, and the installer, manifest, backups and verification follow it
+  there — including a fix for backups that used to be flattened to a filename and
+  restored to the game root.
+- **The Steam Deck preset is FSR 4 Lite.** It writes `Dx12Upscaler=ffx`,
+  `Dx11Upscaler=ffx_12`, `VulkanUpscaler=ffx_12`, `Fsr4GpuSupport=4` and
+  `Fsr4Model=3`. AMD's driver FSR libraries ship with the plugin because v10 loads
+  the Lite model from them, and the OptiScaler release does not contain them.
+- The option schema is regenerated from v10's own ini: 355 options across 37
+  sections, `fsr31` renamed to `ffx`, and `Fsr4Update` / `Fsr4ForceEnableInt8`
+  replaced by `Fsr4GpuSupport` / `Fsr4Model`. Presets, automatic mode and the FSR
+  version helper no longer write the removed keys.
+- The community 4.1.1b build is still selectable in the FSR 4 panel. It is no
+  longer the preset, because Lite should reach FSR 4 with AMD's own model.
+
+### Known limitations
+
+- **Live in-game control is off in this build.** The ASI is compiled against a
+  copy of the runtime's structs that is still 0.9.4; installing it into a v10
+  process would write through the old offsets. It returns once re-vendored.
+- FSR 4 Lite on Van Gogh is still unverified on device — this build is the first
+  one that can test it.
+
 ## [0.0.7-steamdeck.5] - 2026-11-10
 
 ### Fixed

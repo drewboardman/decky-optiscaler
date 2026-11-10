@@ -8,6 +8,13 @@ OPTISCALER_VERSION = "10.0.0-pre1"
 PAYLOAD_ARCHIVE = "OptiScaler-10.0.0-pre1_20261110.7z"
 PAYLOAD_SHA256 = "a744775492ec0c0b0df9804b3b83918aea8b9deb56b3084b1efb81731242c69d"
 
+#: The live-control ASI is compiled against the copy of the runtime's structs in
+#: `asi/optiscaler_ref/`. That copy is 0.9.4, and v10 moved members around, so an
+#: ASI built from it would write through the old offsets inside a v10 process —
+#: which is a corruption bug, not a missing feature. Withheld until it is
+#: re-vendored; `install_live` already reports that this build ships none.
+LIVE_ASI_ENABLED = False
+
 INI_NAME = "OptiScaler.ini"
 LOG_NAME = "OptiScaler.log"
 # Written by this plugin so an install can be recognised later with certainty.
