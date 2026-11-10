@@ -548,6 +548,41 @@ async function render(name: string, element: React.ReactElement) {
   console.log(`  basic 2X/3X/4X multiplier is a dropdown: ${gd.host.textContent!.includes("2X") && gd.host.textContent!.includes("4X")}`);
   console.log(`  FSR4 reported from bundled SDK: ${gd.host.textContent!.includes("4.1.1.2740")}`);
   console.log(`  no false 'FSR4 missing file' claim: ${!gd.host.textContent!.includes("does not ship")}`);
+  // The panel lists what it could install next to what is installed, so moving
+  // between the release's own build and AMD's is a choice rather than a preset
+  // that happens to run a download. Setup only mounts it once a game is
+  // installed, which the page fixture above does not reach, so it is rendered on
+  // its own — this is what a user sees after installing.
+  {
+    const { Fsr4Panel } = await import("../src/components/Fsr4Panel");
+    const info: any = (fixtures as any).get_fsr4_info;
+    const mount = (name: string) => render(name,
+      <Fsr4Panel targetDir="/games/Cyberpunk 2077" sources={[]} gpu={info.gpu} onChanged={() => {}} />);
+
+    const live = await mount("Fsr4PanelInstalled");
+    const liveText = live.host.textContent!;
+    console.log(`  the FSR 4 panel names what is installed: ${liveText.includes("Bundled (FidelityFX SDK 4.1.1)")}`);
+    console.log(`  and offers AMD's build beside it: ${liveText.includes("Switch to 4.1.2 (Official AMD, INT8 + Lite)")}`);
+    console.log(`  without claiming the install is incomplete: ${!liveText.includes("did not install cleanly")}`);
+
+    // A retired build is recognised by its bytes, so the panel can name it and
+    // offer the build that replaced it. Reported as unrecognised instead, the
+    // user would be told their install is broken when it is only out of date.
+    const installed = info.status.build;
+    info.status.build = {
+      ...installed, id: "4.1.1b", label: "4.1.1b (INT8, RDNA 2 ghosting fix)",
+      sha256: "0".repeat(64), bytes: 34013696, retired: true, successor: "4.1.2",
+    };
+    info.status.needs_replacement = true;
+    const stale = await mount("Fsr4PanelRetired");
+    const staleText = stale.host.textContent!;
+    console.log(`  a retired build is named, not called unknown: ${staleText.includes("4.1.1b (INT8, RDNA 2 ghosting fix)") && !staleText.includes("Unrecognised")}`);
+    console.log(`  and the panel says it is no longer shipped: ${staleText.includes("no longer shipped")}`);
+    console.log(`  and offers the build that replaces it: ${staleText.includes("Switch to 4.1.2 (Official AMD, INT8 + Lite)")}`);
+    console.log(`  and does not call the install broken: ${!staleText.includes("did not install cleanly")}`);
+    info.status.build = installed;
+    info.status.needs_replacement = false;
+  }
 
   // Flip to advanced mode and re-render.
   (globalThis as any).window.localStorage.setItem("decky-optiscaler:advanced", "1");
