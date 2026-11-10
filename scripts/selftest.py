@@ -1631,9 +1631,17 @@ def check_version_pin():
     if not ref.is_file():
         return
     text = ref.read_text(encoding="utf-8")
-    check("vendored headers name the shipped OptiScaler version",
-          f"v{constants.OPTISCALER_VERSION}" in text,
-          f"want v{constants.OPTISCALER_VERSION} in SOURCE_COMMIT.txt")
+    # Only a build that installs the ASI has to prove the mirror matches the
+    # runtime it will be loaded into. Live control is withheld until it is
+    # re-vendored, so the stamp is expected to lag and says so here.
+    if constants.LIVE_ASI_ENABLED:
+        check("vendored headers name the shipped OptiScaler version",
+              f"v{constants.OPTISCALER_VERSION}" in text,
+              f"want v{constants.OPTISCALER_VERSION} in SOURCE_COMMIT.txt")
+    else:
+        check("the withheld asi is not claimed to match this runtime",
+              f"v{constants.OPTISCALER_VERSION}" not in text,
+              "SOURCE_COMMIT.txt already names v10; re-vendoring may be done")
     check("the shipped archive matches the pinned version",
           constants.OPTISCALER_VERSION in constants.PAYLOAD_ARCHIVE,
           constants.PAYLOAD_ARCHIVE)
