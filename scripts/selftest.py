@@ -334,7 +334,7 @@ async def run():
               and not ({b["id"] for b in fsr4build.FSR4_RETIRED_BUILDS}
                        & {b["id"] for b in fsr4build.builds()}))
         check("and every retired build names an offered successor",
-              all((fsr4build.find(b.get("successor")) or {}).get("retired") is False
+              all(fsr4build.find(b.get("successor")) in fsr4build.builds()
                   for b in fsr4build.FSR4_RETIRED_BUILDS))
         check("which setting reaches FSR 4 follows the version, not the GPU",
               fsr4build.reaches_fsr4_by([4, 1, 1, 2740]) == "int8"
