@@ -195,7 +195,8 @@ Object.assign(fixtures, {
     sources: [], gpu: {},
     builds: [
       { id: "bundled", label: "Bundled (FidelityFX SDK 4.1.1)", note: "The build the OptiScaler release ships." },
-      { id: "4.1.2", label: "4.1.2 (Official AMD, INT8 + Lite)", note: "Official AMD build from FSR SDK 2.4." },
+      { id: "4.1.1b", label: "4.1.1b (INT8, RDNA 2)", note: "Community INT8 build with the RDNA2 ghosting fix." },
+      { id: "4.1.2", label: "4.1.2 (Official AMD, no FSR 4 on Deck)", note: "AMD's own build from FSR SDK 2.4." },
     ],
   },
   verify_install: {
@@ -562,7 +563,7 @@ async function render(name: string, element: React.ReactElement) {
     const live = await mount("Fsr4PanelInstalled");
     const liveText = live.host.textContent!;
     console.log(`  the FSR 4 panel names what is installed: ${liveText.includes("Bundled (FidelityFX SDK 4.1.1)")}`);
-    console.log(`  and offers AMD's build beside it: ${liveText.includes("Switch to 4.1.2 (Official AMD, INT8 + Lite)")}`);
+    console.log(`  and offers both builds beside it: ${liveText.includes("Switch to 4.1.1b (INT8, RDNA 2)") && liveText.includes("Switch to 4.1.2 (Official AMD, no FSR 4 on Deck)")}`);
     console.log(`  without claiming the install is incomplete: ${!liveText.includes("did not install cleanly")}`);
 
     // A retired build is recognised by its bytes, so the panel can name it and
@@ -578,7 +579,7 @@ async function render(name: string, element: React.ReactElement) {
     const staleText = stale.host.textContent!;
     console.log(`  a retired build is named, not called unknown: ${staleText.includes("4.1.1b (INT8, RDNA 2 ghosting fix)") && !staleText.includes("Unrecognised")}`);
     console.log(`  and the panel says it is no longer shipped: ${staleText.includes("no longer shipped")}`);
-    console.log(`  and offers the build that replaces it: ${staleText.includes("Switch to 4.1.2 (Official AMD, INT8 + Lite)")}`);
+    console.log(`  and offers the build that replaces it: ${staleText.includes("Switch to 4.1.2 (Official AMD, no FSR 4 on Deck)")}`);
     console.log(`  and does not call the install broken: ${!staleText.includes("did not install cleanly")}`);
     info.status.build = installed;
     info.status.needs_replacement = false;

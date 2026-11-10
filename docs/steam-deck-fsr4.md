@@ -2,16 +2,29 @@
 
 Close the game, install OptiScaler through the plugin if needed, and select
 **FSR 4 — Steam Deck** under Basic → Override upscaler with. Nothing is
-downloaded: the archive ships inside the plugin (`bin/FSR4_4.1.2_INT8.zip`), so
-setting up a second game is a copy rather than another transfer. Validation
-failure leaves the previous DLL and settings intact.
+downloaded: the archive ships inside the plugin, so setting up a second game is a
+copy rather than another transfer. Validation failure leaves the previous DLL and
+settings intact.
 
-This option installs AMD's own `amd_fidelityfx_upscaler_dx12.dll` from
-[FSR SDK 2.4](https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/releases/tag/v2.4.0),
-which is FSR Upscaling **4.1.2**. Archive and DLL SHA-256 values are pinned in
-the plugin, and the file reports `4.1.2.4555`. It carries both the full and the
-Lite INT8 model; which one runs is decided inside the DLL. OptiScaler 0.9.4 has
-no setting that overrides that choice, so there is nothing here to switch.
+This option installs the community RDNA 2 build, **4.1.1b**, with
+`Fsr4ForceEnableInt8`. The archive and the DLL inside it are both pinned by
+SHA-256 in the plugin.
+
+## Why the preset is not AMD's own 4.1.2
+
+Because it does not reach FSR 4 on Van Gogh, the chip in both Steam Deck models.
+With `bin/FSR4_4.1.2_INT8.zip` in the game folder, OptiScaler's FFX upscaler list
+tops out at FSR 3.1.6 — the analytical path — and contains no FSR 4 entry at all,
+so the upgrade has nothing to select. The file does load and is read: FSR 3.1.6
+exists only in SDK 2.4, and the previous line carried 3.1.5.
+
+AMD's 4.1.2 notes cover RDNA 2 as RX 6000 **discrete** cards, plus Strix Halo,
+Strix Point, Gorgon Halo, Gorgon Point, Z2 A and Z2 Extreme. Van Gogh is not among
+them, and Z2 A is a different RDNA 2 part. The community respin exists to get
+around that check, which is why the preset still uses it.
+
+4.1.2 remains in the FSR 4 panel for the hardware AMD does support. It is listed
+with the caveat rather than offered as an upgrade.
 
 The plugin still bundles OptiScaler runtime **0.9.4**, including the original
 SDK **4.1.1**. OptiScaler Client **1.0.7** is a separate management application;
@@ -30,11 +43,10 @@ Cyberpunk setup tested here). Enable the FSR watermark in OptiScaler to confirm
 `FSR4-I8`; plain FSR3 indicates fallback. Setup identifies the installed patch,
 while the watermark identifies the model actually running.
 
-This is still experimental on the Steam Deck. AMD's 4.1.2 notes list RDNA 2 as
-supported for discrete RX 6000 cards and for a set of Ryzen APUs — Strix Halo,
-Strix Point, Gorgon Halo, Gorgon Point, Z2 A and Z2 Extreme. Van Gogh, the chip
-in both Steam Deck models, is not named. Evaluate motion/ghosting, image quality
-and base frame rate in the same scene before and after enabling.
+This is experimental, and it runs a modified game DLL redistributed by the
+community. Evaluate motion/ghosting, image quality and base frame rate in the
+same scene before and after enabling, and avoid it in games whose anti-cheat
+forbids modified DLLs.
 
 It does not fix or enable FSR4 frame generation. You may keep FSR3 frame
 generation with FSR4 upscaling; test stability separately.
@@ -65,14 +77,13 @@ fail at install time.
 
 A build the plugin stops offering moves to `FSR4_RETIRED_BUILDS` instead of
 disappearing from it. Its bytes stay recognised, so an install made while it was
-current keeps verifying, keeps surviving a reinstall, and can be reported in
-Setup next to the build that replaces it. Dropping the entry outright would turn
-that install into "Unrecognised FSR 4 build" and make reinstall refuse over a
-build it could no longer find.
+current keeps verifying and keeps surviving a reinstall. Deleting the entry
+outright would turn that install into "Unrecognised FSR 4 build" and make
+reinstall refuse over a build it could no longer find.
 
-The 4.1.1b community build is now one of those: recognised, not offered, and
-reported as replaceable. Setup names AMD's build beside it, and choosing that
-replaces the DLL while keeping the upscaler and frame generation settings.
+The table is **empty** right now. It held 4.1.1b for one release, while 4.1.2 was
+believed to replace it; that was wrong on this hardware, so 4.1.1b is offered
+again and nothing is retired.
 
 ## Switching back
 

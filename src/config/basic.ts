@@ -27,8 +27,13 @@ const get = (values: ConfigValues, section: string, key: string) =>
  * One name for it, because it is compared in three places — what the preset
  * asks the backend to install, and what the game folder reports afterwards. Two
  * string literals either side of that comparison drift apart silently the first
- * time the pinned build moves. */
-export const FSR4_BUILD_ID = "4.1.2";
+ * time the pinned build moves.
+ *
+ * Back to the community build: AMD's 4.1.2 offers no FSR 4 entry at all on Van
+ * Gogh, so the preset that points at it installs a file the Deck cannot use. Both
+ * builds stay offered in the FSR 4 panel; this is only which one the preset picks.
+ */
+export const FSR4_BUILD_ID = "4.1.1b";
 
 const change = (section: string, key: string, value: string): OptionChange => ({
   section,
@@ -106,7 +111,7 @@ export const UPSCALER_PRESETS: Preset[] = [
     // documents the preset for matching/validation; onEnableFsr4 applies it.
     id: "fsr4-int8",
     label: "FSR 4 — Steam Deck",
-    description: "Installs AMD's own 4.1.2 build and enables INT8 upscaling. Close the game first.",
+    description: "Installs the RDNA 2 build and enables INT8 upscaling. Close the game first.",
     changes: [
       change("Upscalers", "Dx12Upscaler", "fsr31"),
       change("Upscalers", "Dx11Upscaler", "fsr31_12"),

@@ -209,14 +209,19 @@ FSR4_SOURCE_HINTS = [
     "decky-optiscaler",
 ]
 
-# The upscaler builds this plugin offers. AMD's own now: FSR Upscaling 4.1.2
-# (FSR SDK 2.4) added RDNA 2 support itself, so the community RDNA2 respin is
-# no longer carried. One archive, shipped in bin/ next to the payload, so
-# reaching FSR 4 costs no download on a device that is often offline or tethered.
+# The upscaler builds this plugin offers, both shipped in bin/ so that neither
+# needs a download on a device that is often offline or tethered.
 #
-# Unlike the community builds, an official DLL carries a real version resource
-# (4.1.2.4555), which is why each entry is still pinned by hash: the hash says
-# which bytes to install, the version resource only says what they claim to be.
+# Order is the order the panel lists them, and 4.1.1b is first on purpose: it is
+# the build that reaches FSR 4 on Van Gogh. AMD's 4.1.2 does not. On a Deck its
+# version list tops out at the FSR 3.1.6 it carries, with no FSR 4 entry at all,
+# so OptiScaler has nothing to upgrade to and runs the analytical path instead.
+# AMD's 4.1.2 notes cover RDNA 2 only as RX 6000 discrete cards and a set of
+# Ryzen APUs — Z2 A is in that list, Van Gogh is not — and the community respin
+# existed to get round exactly that check.
+#
+# Both are pinned by hash because the hash is what decides which bytes go into a
+# game folder. The version resource only records what a file claims to be.
 FSR4_BUNDLED_BUILD_ID = "bundled"
 #: The released SDK build, identified by hash like any other. Not downloadable:
 #: it is already in bin/ and is what "reinstall" and "restore" put back.
@@ -226,11 +231,30 @@ FSR4_BUNDLED_FILE_SHA256 = (
 FSR4_BUNDLED_FILE_BYTES = 28761864
 FSR4_BUILDS = [
     {
+        "id": "4.1.1b",
+        "label": "4.1.1b (INT8, RDNA 2)",
+        "note": "Community INT8 build with the RDNA2 ghosting fix. Reaches FSR 4 "
+                "on Van Gogh through the INT8 override, which AMD's own build "
+                "does not do there.",
+        "sources": [
+            {
+                # Shipped in bin/, so there is no release to fetch it from
+                "local": True,
+                "asset": "FSR4_4.1.1b_INT8.7z",
+                "archive_sha256": "66e9a818e0c914def7712c8dac06b08e64a64dbcfe77f3162d43ea6de93869ff",
+            },
+        ],
+        "file": "amd_fidelityfx_upscaler_dx12.dll",
+        "file_sha256": "0dd77d9c78d1ef9bc330cf4697ab3ffe24bc1aa7850e4130263dc922107fbd75",
+        "file_bytes": 34013696,
+        "reaches_fsr4_by": "int8",
+    },
+    {
         "id": "4.1.2",
-        "label": "4.1.2 (Official AMD, INT8 + Lite)",
-        "note": "Official AMD build from FSR SDK 2.4, shipped in bin/. Carries "
-                "both the full and the Lite INT8 model; the DLL chooses between "
-                "them itself.",
+        "label": "4.1.2 (Official AMD, no FSR 4 on Deck)",
+        "note": "AMD's own build from FSR SDK 2.4, reading 4.1.2.4555. Carries "
+                "the full and Lite INT8 models, but offers only FSR 3.1.6 on Van "
+                "Gogh — no FSR 4 entry — so the Deck cannot reach FSR 4 with it.",
         "sources": [
             {
                 # Shipped in bin/, so there is no release to fetch it from
@@ -246,26 +270,13 @@ FSR4_BUILDS = [
     },
 ]
 
-# Builds this plugin no longer offers, kept so an install made while they were
-# current is still recognised. Dropping an entry outright does not shorten
-# anything a user sees: identify() would call their DLL "Unrecognised", every
-# verify would list those bytes as a problem, and install() refuses to reinstall
-# over a build it cannot find (installer.install). Recognition is the cheap half
-# of retiring something, and it is what makes an offer to replace it possible.
-FSR4_RETIRED_BUILDS = [
-    {
-        "id": "4.1.1b",
-        "label": "4.1.1b (INT8, RDNA 2 ghosting fix)",
-        "note": "Community INT8 build with the RDNA2 ghosting fix. Superseded by "
-                "the official 4.1.2 build, which supports RDNA 2 itself.",
-        "file": "amd_fidelityfx_upscaler_dx12.dll",
-        "file_sha256": "0dd77d9c78d1ef9bc330cf4697ab3ffe24bc1aa7850e4130263dc922107fbd75",
-        "file_bytes": 34013696,
-        "reaches_fsr4_by": "int8",
-        "retired": True,
-        "successor": "4.1.2",
-    },
-]
+# Empty right now, and the machinery stays. Nothing is retired: 4.1.1b is offered
+# again, because AMD's 4.1.2 turned out not to reach FSR 4 on Van Gogh and it was
+# the only build that did. The table is kept because deleting an entry outright is
+# what breaks installs — identify() would call those bytes "Unrecognised", verify
+# would list them as a problem, and install() refuses to reinstall over a build it
+# cannot find (installer.install). That distinction has now mattered twice.
+FSR4_RETIRED_BUILDS = []
 
 
 WIKI_RAW_BASE = "https://raw.githubusercontent.com/wiki/optiscaler/OptiScaler"

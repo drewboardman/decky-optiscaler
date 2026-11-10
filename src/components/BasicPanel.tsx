@@ -662,8 +662,9 @@ export function BasicPanel({
         {upscalerChoices.some((preset) => preset.id === "fsr4-int8") ? (
           <PanelSectionRow>
             <div style={{ fontSize: "12px", color: "#b8bcbf", padding: "4px 0" }}>
-              AMD's own upscaler build. Frame generation is configured separately, and
-              FSR 4 still has to be selected in-game.
+              The Steam Deck preset installs a modified game DLL redistributed by the
+              community, because AMD's own build does not reach FSR 4 on this chip.
+              Avoid it in titles whose anti-cheat forbids modified DLLs.
             </div>
           </PanelSectionRow>
         ) : null}

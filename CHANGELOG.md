@@ -5,7 +5,27 @@ Newest first. Each release ships `Decky OptiScaler.zip` for Decky Loader's
 
 ## [Unreleased]
 
+## [0.0.7-steamdeck.5] - 2026-11-10
+
+### Fixed
+
+- **The Steam Deck preset is back on the RDNA 2 build.** In 0.0.7-steamdeck.4 it
+  pointed at AMD's own 4.1.2, which does not reach FSR 4 on Van Gogh: with that
+  file in place, OptiScaler's FFX upscaler list reported FSR 3.1.6 and no FSR 4
+  entry at all, so the preset installed something the Deck cannot use. The DLL
+  does load — FSR 3.1.6 exists only in SDK 2.4 — it just offers no ML path on
+  this chip, which AMD's own support notes bear out.
+- 4.1.1b is offered again, and both builds now ship in `bin/`, so either one is a
+  one-tap switch with no download and nothing to fetch from a third-party release.
+- 4.1.2 is still in the FSR 4 panel, labelled with what it actually does on a
+  Deck rather than recommended as its replacement.
+- The retired-build table is empty again. The machinery stays: it is what keeps a
+  dropped build's installs verifiable.
+
 ## [0.0.7-steamdeck.4] - 2026-11-10
+
+> Superseded by 0.0.7-steamdeck.5 — the preset it shipped does not reach FSR 4 on
+> a Steam Deck.
 
 ### Added
 
