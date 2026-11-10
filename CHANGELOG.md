@@ -5,6 +5,8 @@ Newest first. Each release ships `Decky OptiScaler.zip` for Decky Loader's
 
 ## [Unreleased]
 
+## [0.0.7-steamdeck.4] - 2026-11-10
+
 ### Added
 
 - A pinned FSR 4 build may name a `"local"` source instead of a release, in which
