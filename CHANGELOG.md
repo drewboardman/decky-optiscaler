@@ -5,6 +5,26 @@ Newest first. Each release ships `Decky OptiScaler.zip` for Decky Loader's
 
 ## [Unreleased]
 
+## [0.0.7-steamdeck.7] - 2026-11-10
+
+### Fixed
+
+- **The Steam Deck preset is back on the community RDNA 2 build.** 0.0.7-steamdeck.6
+  forced v10's Lite model (`Fsr4GpuSupport=4`, `Fsr4Model=3`). It does load on a
+  Deck — the watermark reads `FSR4L-i8 Upscale 4.1.2` — but it is slower and looks
+  worse than the 4.1.1b build it replaced, so the preset now installs that build
+  and leaves `Fsr4GpuSupport` and `Fsr4Model` at `auto`.
+- 0.0.7-steamdeck.6 is withdrawn. Both model keys remain in the schema, so Lite is
+  still reachable from Advanced for anyone who wants to try it.
+
+### Known limitations
+
+- **Live in-game control is off in this build.** The ASI is compiled against a copy
+  of the runtime's structs that is still 0.9.4; installing it into a v10 process
+  would write through the old offsets. It returns once re-vendored.
+- Whether `auto` resolves to the RDNA 2 build's own INT8 path or to the driver's
+  model is unverified on device — the watermark distinguishes them.
+
 ## [0.0.7-steamdeck.6] - 2026-11-10
 
 ### Changed
