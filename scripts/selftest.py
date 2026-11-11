@@ -2643,7 +2643,7 @@ def check_option_validation():
         "fsr4-int8": [("Upscalers", "Dx12Upscaler", "ffx"),
                       ("Upscalers", "Dx11Upscaler", "ffx_12"),
                       ("Upscalers", "VulkanUpscaler", "ffx_12"),
-                      ("FSR", "Fsr4GpuSupport", "4"), ("FSR", "Fsr4Model", "3"),
+                      ("FSR", "Fsr4GpuSupport", "auto"), ("FSR", "Fsr4Model", "auto"),
                       ("FSR", "UpscalerIndex", "0"), ("FSR", "Fsr4Preset", "auto")],
         "fsr31": [("Upscalers", "Dx12Upscaler", "ffx"), ("Upscalers", "Dx11Upscaler", "ffx_12"),
                   ("Upscalers", "VulkanUpscaler", "ffx_12"), ("FSR", "UpscalerIndex", "1")],

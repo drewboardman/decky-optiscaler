@@ -247,8 +247,11 @@ class DeckFsr4Tests(unittest.TestCase):
         self.assertTrue(self.enable()['ok'])
         config = asyncio.run(self.service.read_config(str(self.target)))
         self.assertEqual(config['fsr4_build'], TEST_BUILD_ID)
-        self.assertEqual(config['values']['FSR']['Fsr4GpuSupport'], '4')
-        self.assertEqual(config['values']['FSR']['Fsr4Model'], '3')
+        # The preset installs the RDNA 2 build and asks for FSR 4 without picking
+        # a model: the build's own INT8 path is what worked before, and forcing
+        # v10's Lite model measured worse on a Deck.
+        self.assertEqual(config['values']['FSR']['Fsr4GpuSupport'], 'auto')
+        self.assertEqual(config['values']['FSR']['Fsr4Model'], 'auto')
         self.assertEqual(config['values']['FSR']['Fsr4Preset'], 'auto')
         self.assertEqual(config['values']['FSR']['UpscalerIndex'], '0')
         self.assertEqual(config['values']['FrameGen']['FGOutput'], 'fsr3')

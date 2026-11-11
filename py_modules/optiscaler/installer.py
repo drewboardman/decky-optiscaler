@@ -369,10 +369,11 @@ def _replace_fsr4(target, source, recorded, enable_int8=False):
                 changes = {
                     "Upscalers": {"Dx12Upscaler": "ffx", "Dx11Upscaler": "ffx_12",
                                   "VulkanUpscaler": "ffx_12"},
-                    # v10 does not merely allow FSR 4, it picks the model. 4 on
-                    # the GPU-support override plus 3 on the model itself is how
-                    # the Lite network runs on hardware AMD does not list.
-                    "FSR": {"Fsr4GpuSupport": "4", "Fsr4Model": "3",
+                    # The Deck preset installs the community RDNA 2 build and asks
+                    # for FSR 4 without picking a model, so the DLL's own INT8
+                    # path is what runs. Forcing Lite here measured worse on a
+                    # Deck than the build it replaced.
+                    "FSR": {"Fsr4GpuSupport": "auto", "Fsr4Model": "auto",
                             "UpscalerIndex": "0", "Fsr4Preset": "auto"},
                 }
                 for section, values in changes.items():

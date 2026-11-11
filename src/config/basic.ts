@@ -100,24 +100,22 @@ export const UPSCALER_PRESETS: Preset[] = [
     // installer._replace_fsr4 owns the atomic DLL/settings write. This list
     // documents the preset for matching/validation; onEnableFsr4 applies it.
     id: "fsr4-int8",
-    label: "FSR 4 Lite — Steam Deck",
-    description: "Installs the RDNA 2 build and selects AMD's Lite model. Close the game first.",
+    label: "FSR 4 — Steam Deck",
+    description: "Installs the community RDNA 2 build and enables FSR 4. Close the game first.",
     changes: [
       change("Upscalers", "Dx12Upscaler", "ffx"),
       change("Upscalers", "Dx11Upscaler", "ffx_12"),
       change("Upscalers", "VulkanUpscaler", "ffx_12"),
-      // v10 replaced the allow-FSR-4 flag with two explicit choices: which GPU
-      // support to claim, and which model to run. 4 + 3 is the Lite network on
-      // an override, which is the only route to FSR 4 on Van Gogh.
-      change("FSR", "Fsr4GpuSupport", "4"),
-      change("FSR", "Fsr4Model", "3"),
+      // Model selection is left at auto on purpose. The RDNA 2 build carries its
+      // own INT8 path; forcing v10's Lite model here measured worse on a Deck
+      // than the build it replaced, so the preset does not ask for it.
+      change("FSR", "Fsr4GpuSupport", AUTO),
+      change("FSR", "Fsr4Model", AUTO),
       change("FSR", "UpscalerIndex", "0"),
       change("FSR", "Fsr4Preset", AUTO),
     ],
     matches: (values) =>
       get(values, "Upscalers", "Dx12Upscaler") === "ffx" &&
-      get(values, "FSR", "Fsr4GpuSupport") === "4" &&
-      get(values, "FSR", "Fsr4Model") === "3" &&
       get(values, "FSR", "UpscalerIndex") === "0",
   },
   upscalerPreset(
