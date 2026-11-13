@@ -30,6 +30,17 @@ The plugin still bundles OptiScaler runtime **0.9.4**, including the original
 SDK **4.1.1**. OptiScaler Client **1.0.7** is a separate management application;
 it is not required or installed by this plugin.
 
+## Lite was tried, and is not the preset
+
+v10 can pick AMD's own model: `Fsr4Model` is `0` FP8, `1` INT8, `2` INT8 RDNA2 and `3` INT8
+Lite, with `Fsr4GpuSupport` overriding the detected GPU support. **Lite does load on a Deck** —
+the watermark reads `FSR4L-i8 Upscale 4.1.2` — but it measured worse than the community RDNA 2
+build in both image quality and frame rate, so the preset installs that build and leaves both
+model keys at `auto`.
+
+Both keys are in Advanced if you want to compare on your own hardware. `Fsr4Model=2` asks for
+the driver's non-Lite INT8 model; `3` is Lite itself.
+
 ## Settings and verification
 
 The option selects the FidelityFX backend (`fsr31` for DX12), sets

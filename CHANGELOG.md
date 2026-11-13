@@ -5,6 +5,20 @@ Newest first. Each release ships `Decky OptiScaler.zip` for Decky Loader's
 
 ## [Unreleased]
 
+## [0.0.7-steamdeck.8] - 2026-11-13
+
+### Changed
+
+- The README and the Steam Deck page describe what the plugin actually ships now: the
+  bundled runtime is OptiScaler 10.0.0-pre1 with its `OptiScaler/` folder, the Deck preset
+  installs the community RDNA 2 build and leaves OptiScaler's model selector at `auto`, and
+  live in-game control is off until the ASI is re-vendored.
+- Documented the Lite measurement: it loads (`FSR4L-i8 Upscale 4.1.2`) and is worse than the
+  build it replaced on Van Gogh. `Fsr4Model` / `Fsr4GpuSupport` stay in Advanced for anyone who
+  wants to compare.
+
+No code changes in this release.
+
 ## [0.0.7-steamdeck.7] - 2026-11-10
 
 ### Fixed

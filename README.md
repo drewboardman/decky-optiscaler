@@ -10,7 +10,9 @@ configures [OptiScaler](https://github.com/optiscaler/OptiScaler) per game from 
 OptiScaler's settings, with a gamepad. The ones OptiScaler can change on the fly apply to the
 running game; the rest say plainly that they take effect on the next launch.
 
-OptiScaler v0.9.4 is bundled, so installing works offline and every game gets the same build.
+OptiScaler **10.0.0-pre1** is bundled — a pinned nightly, not a moving `latest` — so
+installing works offline and every game gets the same build. It keeps its libraries in an
+`OptiScaler/` folder beside the proxy instead of scattering them through the game directory.
 
 > **Unofficial.** I am an independent developer with no connection to the OptiScaler project.
 > This plugin is not made, endorsed or supported by them — it bundles their release and drives
@@ -43,14 +45,17 @@ OptiScaler v0.9.4 is bundled, so installing works offline and every game gets th
   they match the shipped build. Edits keep every comment in the file, and names are the
   overlay's own.
 - **FSR 4 on Steam Deck.** Close the game, then choose **FSR 4 — Steam Deck** in Basic
-  settings. The RDNA 2 upscaler build ships inside the plugin, so one selection installs it
-  and enables INT8 upscaling — no download. Frame generation stays separate. See
-  [Steam Deck FSR 4](docs/steam-deck-fsr4.md) for why AMD's own 4.1.2 is not used on this
-  chip, plus verification, rollback and limitations.
+  settings. The community RDNA 2 upscaler build ships inside the plugin, so one selection
+  installs it with FSR 4 turned on — no download. Frame generation stays separate.
+  OptiScaler's own model selector (FP8 / INT8 / INT8 RDNA2 / INT8 Lite) is left at `auto`;
+  forcing the Lite model measured worse on a Deck than this build, so the preset does not ask
+  for it. See [Steam Deck FSR 4](docs/steam-deck-fsr4.md) for why AMD's own DLL is not used on
+  this chip, plus verification, rollback and limitations.
 - **Changes settings while you play.** A bundled ASI plugin applies frame generation, the
   FidelityFX FG version, the upscaler and the FSR version immediately from the Quick Access
   panel — next to what the game actually ended up running and, with frame generation on, both
-  frame rates. See [Live in-game control](#live-in-game-control).
+  frame rates. See [Live in-game control](#live-in-game-control), which is currently off while
+  the live-control ASI is re-vendored against OptiScaler v10.
 - **Doesn't lose your files, or your launch options.** Anything an install would overwrite is
   moved into `decky_optiscaler_backup_files/` and put back on uninstall. The launch options the
   game had beforehand are kept the same way, so removing OptiScaler can offer to restore them
@@ -112,6 +117,12 @@ and settings changes are covered by fixtures; a real Steam Deck/Flatpak launch a
 live-control check are still required to validate the complete runtime path.
 
 ## Live in-game control
+
+> **Off in the current build.** The ASI is compiled against a copy of OptiScaler's structs
+> that is still 0.9.4, and the bundled runtime is now 10.0.0-pre1. Loading it would write
+> through stale offsets inside the game process, so `LIVE_ASI_ENABLED` withholds it and
+> Settings apply on the next launch instead. The rest of this section describes the design,
+> which returns once the ASI is re-vendored.
 
 OptiScaler reads its INI once, at startup — no file watcher, no IPC — and its overlay gets away
 with live changes only because it *is* the game process. So the plugin ships a small ASI plugin
