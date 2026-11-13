@@ -82,7 +82,7 @@ jobs:
       - name: Name the asset after the release
         id: asset
         run: |
-          asset="out/Decky-OptiScaler-${{ steps.version.outputs.tag }}.zip"
+          asset="out/decky-optiscaler-${{ steps.version.outputs.version }}.zip"
           mv "out/Decky OptiScaler.zip" "$asset"
           echo "path=$asset" >> "$GITHUB_OUTPUT"
 

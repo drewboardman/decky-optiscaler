@@ -5,7 +5,7 @@ Newest first. Each release ships `Decky OptiScaler.zip` for Decky Loader's
 
 ## [Unreleased]
 
-## [0.0.7-steamdeck.10] - 2026-11-13
+## [0.8.0] - 2026-11-13
 
 ### Removed
 
