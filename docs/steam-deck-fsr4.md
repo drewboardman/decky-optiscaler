@@ -30,16 +30,19 @@ The plugin still bundles OptiScaler runtime **0.9.4**, including the original
 SDK **4.1.1**. OptiScaler Client **1.0.7** is a separate management application;
 it is not required or installed by this plugin.
 
-## Lite was tried, and is not the preset
+## Lite was tried, and is gone
 
 v10 can pick AMD's own model: `Fsr4Model` is `0` FP8, `1` INT8, `2` INT8 RDNA2 and `3` INT8
-Lite, with `Fsr4GpuSupport` overriding the detected GPU support. **Lite does load on a Deck** —
-the watermark reads `FSR4L-i8 Upscale 4.1.2` — but it measured worse than the community RDNA 2
-build in both image quality and frame rate, so the preset installs that build and leaves both
-model keys at `auto`.
+Lite. **Lite does load on a Deck** — the watermark reads `FSR4L-i8 Upscale 4.1.2` — but it
+measured worse than the community RDNA 2 build in both image quality and frame rate.
 
-Both keys are in Advanced if you want to compare on your own hardware. `Fsr4Model=2` asks for
-the driver's non-Lite INT8 model; `3` is Lite itself.
+Those models live in AMD's driver FSR libraries (`amdxcffx64.dll` and `amdvkffx64.dll`), and
+Lite only exists in the Vulkan one. The plugin **does not ship them**: they cost 39 MB and the
+only thing they enabled on this hardware was the model that lost. Without them the SDK
+upscaler in `OptiScaler/` is the sole FSR 4 source, which is the build this preset installs.
+
+The keys are still in Advanced, because they are still part of v10's ini — but with no driver
+library beside them there is nothing for them to select.
 
 ## Settings and verification
 

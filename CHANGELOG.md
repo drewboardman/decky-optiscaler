@@ -5,6 +5,18 @@ Newest first. Each release ships `Decky OptiScaler.zip` for Decky Loader's
 
 ## [Unreleased]
 
+## [0.0.7-steamdeck.10] - 2026-11-13
+
+### Removed
+
+- **AMD's driver FSR libraries are no longer bundled.** `amdxcffx64.dll` and
+  `amdvkffx64.dll` were 39 MB of the download, and the only thing they enabled on a Deck
+  was v10's model selector — whose Lite model measured worse than the community RDNA 2 build
+  in both image quality and frame rate. The release drops from 111.6 MB to about 73 MB.
+- With them gone the SDK upscaler in `<game>/OptiScaler/` is the only FSR 4 source, so the
+  Deck preset's `auto` has nothing else to resolve to. `Fsr4Model` and `Fsr4GpuSupport` remain
+  in Advanced as part of v10's ini, but select nothing without a driver library beside them.
+
 ## [0.0.7-steamdeck.9] - 2026-11-13
 
 ### Fixed

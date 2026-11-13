@@ -157,23 +157,16 @@ PAYLOAD_FILES = [
     "OptiScaler/libxess_dx11.dll",
     "OptiScaler/libxess_fg.dll",
     "OptiScaler/Streamlined_fetcher_windows.bat",
-    # AMD's driver FSR libraries. Not part of the OptiScaler release — they are
-    # unpacked from FSR4_DRIVER_ARCHIVE into the payload before an install, and
-    # v10's FSR 4 path is what loads them from this folder.
-    "OptiScaler/amdxcffx64.dll",
-    "OptiScaler/amdvkffx64.dll",
 ]
 # D3D12_Optiscaler is inside PAYLOAD_SUBDIR now; Licenses stays at the root.
 PAYLOAD_DIRS = ["Licenses"]
 
-#: The two AMD driver libraries that carry the FSR 4 models v10 selects between.
-#: Provenance and hashes are recorded in notes.md; the archive is ours, not
-#: OptiScaler's, which is why it is pinned separately.
-FSR4_DRIVER_ARCHIVE = "FSR4-driver-libs.7z"
-FSR4_DRIVER_SHA256 = (
-    "f3121851eff9dbad71eb98bdadc852270297526335bd4d1bd3cf5e8a7f236ede"
-)
-FSR4_DRIVER_FILES = ["amdxcffx64.dll", "amdvkffx64.dll"]
+# AMD's driver FSR libraries (`amdxcffx64.dll`, `amdvkffx64.dll`) are deliberately
+# not shipped. They are what v10's model selector drives — Lite in particular only
+# exists in the Vulkan one — and Lite measured worse on a Deck than the community
+# RDNA 2 build, so they bought 39 MB and nothing else. Without them the SDK
+# upscaler in `OptiScaler/` is the only FSR 4 source, which is the one this plugin
+# wants.
 
 # Extra files OptiScaler or its helpers create at runtime; removed on uninstall.
 RUNTIME_ARTIFACTS = [

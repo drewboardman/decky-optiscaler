@@ -8,21 +8,16 @@ from pathlib import Path
 from . import autoplan, fsr4build, heroic, installer, live, monitor, reframework, steam
 from .constants import (
     DEFAULT_PROXY,
-    FSR4_DRIVER_ARCHIVE,
-    FSR4_DRIVER_FILES,
-    FSR4_DRIVER_SHA256,
     INI_NAME,
     LIVE_ASI_ENABLED,
     OPTIPATCHER_NAME,
     OPTIPATCHER_VERSION,
     OPTISCALER_VERSION,
     PAYLOAD_ARCHIVE,
-    PAYLOAD_SUBDIR,
     PROXY_FILENAMES,
     REFRAMEWORK_DLL,
 )
 from .inifile import IniFile
-from . import payload
 from .payload import Payload
 from .schema import SCHEMA, valid as _valid
 from .settings import Settings
@@ -66,16 +61,6 @@ class OptiScalerService:
             root = self.payload.root
             if force or not self.payload.ready:
                 root = await self._run(self.payload.ensure, force, self.log)
-            # The driver libraries are ours, not OptiScaler's, so they are
-            # unpacked into the payload rather than trusted to be in the release.
-            await self._run(
-                payload.install_driver_libs,
-                self.plugin_dir / "bin" / FSR4_DRIVER_ARCHIVE,
-                root / PAYLOAD_SUBDIR,
-                FSR4_DRIVER_SHA256,
-                FSR4_DRIVER_FILES,
-                self.log,
-            )
             return str(root)
 
     # -- keeping the wiki cache current ----------------------------------
