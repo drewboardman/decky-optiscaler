@@ -23,6 +23,10 @@ from .constants import (
     DEFAULT_PROXY,
     FSR4_SOURCE_HINTS,
     FSR4_SUPPORT_FILES,
+    HELIXSR_DIR,
+    HELIXSR_INI,
+    HELIXSR_MARKER,
+    HELIXSR_SETTINGS_BACKUP,
     INI_NAME,
     LAUNCH_RECORD_NAME,
     LOG_NAME,
@@ -253,11 +257,71 @@ def fsr4_status(target_dir):
         # here is, and reported as *unknown* rather than as the released one when
         # the hash matches nothing (see fsr4build.identify).
         "build": build,
+        # Another upscaler installed into the same folder. Reported so the panel
+        # can say so rather than implying its own build is what runs.
+        "helixsr": helixsr_status(target),
         # Recognised, but no longer offered: the build is one this plugin has
         # retired and there is a successor it can name. The one useful action is
         # to offer that, which is why this is a flag rather than a version test in
         # the frontend.
         "needs_replacement": bool(build and build.get("retired")),
+    }
+
+
+def helixsr_status(target_dir):
+    """Whether HelixSR has been installed into this game, and by which route.
+
+    Two routes, both visible on disk and neither of them something this plugin
+    performs. HelixSR's own installer replaces the game's FidelityFX DLL in place
+    and leaves `helixsr-install.json` (and, up to 1.x, `helixsr.ini`) beside it.
+    The OptiScaler route creates a `HelixSR/` folder next to OptiScaler.ini and
+    points OptiScaler at it with `FfxDx12Path` / `FfxDx12SRPath`.
+
+    Reported, not acted on. HelixSR owns those files, and while it is in place the
+    FSR 4 panel's build swap is not what decides which upscaler runs.
+    """
+    target = Path(target_dir)
+    routes = []
+
+    if (target / HELIXSR_MARKER).is_file() or (target / HELIXSR_INI).is_file():
+        routes.append("in place of the game's FSR")
+
+    folder = target / HELIXSR_DIR
+    # The folder can outlive a revert — HelixSR keeps it when disabled — so the
+    # ini is what says whether OptiScaler is currently pointed at it.
+    redirected = False
+    ini_path = target / INI_NAME
+    if ini_path.is_file():
+        try:
+            fsr = (IniFile(ini_path).to_dict().get("FSR") or {})
+        except OSError:
+            fsr = {}
+        redirected = any(
+            HELIXSR_DIR.lower() in str(fsr.get(key) or "").lower()
+            for key in ("FfxDx12Path", "FfxDx12SRPath", "FfxDx12FGPath")
+        )
+    if redirected:
+        routes.append("through OptiScaler")
+
+    version = None
+    marker = target / HELIXSR_MARKER
+    if marker.is_file():
+        try:
+            data = json.loads(marker.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            data = {}
+        if isinstance(data, dict):
+            for key in ("version", "helixsr_version", "release", "tag"):
+                if isinstance(data.get(key), str):
+                    version = data[key]
+                    break
+
+    return {
+        "installed": bool(routes),
+        "routes": routes,
+        "version": version,
+        "folder": str(folder) if folder.is_dir() else None,
+        "settings_backup": (target / HELIXSR_SETTINGS_BACKUP).is_file(),
     }
 
 

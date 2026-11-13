@@ -47,6 +47,7 @@ export function Fsr4Panel({ targetDir, sources, gpu, onChanged }: Props) {
   }, [verify]);
 
   const build = info?.status.build ?? null;
+  const helixsr = info?.status.helixsr ?? null;
   const ffx = report?.ffx_upscaler;
   const problems = report?.problems ?? [];
   // The release's own build is not "switched to": it is restored, because it
@@ -84,6 +85,9 @@ export function Fsr4Panel({ targetDir, sources, gpu, onChanged }: Props) {
               <Pill>checking…</Pill>
             )}
             {gpu?.generation ? <Pill>{gpu.generation}</Pill> : null}
+            {helixsr?.installed ? (
+              <Pill color="#b8860b">HelixSR</Pill>
+            ) : null}
           </div>
           <KeyValue label="Upscaler build" value={build?.label ?? "Unknown"} />
           <KeyValue
@@ -98,6 +102,19 @@ export function Fsr4Panel({ targetDir, sources, gpu, onChanged }: Props) {
           />
         </div>
       </PanelSectionRow>
+
+      {helixsr?.installed ? (
+        <PanelSectionRow>
+          <Notice tone="warn" title="HelixSR is installed here">
+            It runs its own upscaler {helixsr.routes.join(" and ")}, so the rows above
+            describe the DLL this plugin put on disk — not necessarily what the game
+            renders with
+            {helixsr.version ? ` (HelixSR ${helixsr.version})` : ""}. This plugin does
+            not install or remove HelixSR; changing the build below will not change what
+            HelixSR uses.
+          </Notice>
+        </PanelSectionRow>
+      ) : null}
 
       {ffx?.fsr4_capable ? (
         <PanelSectionRow>

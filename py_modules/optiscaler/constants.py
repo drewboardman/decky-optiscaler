@@ -15,6 +15,19 @@ PAYLOAD_SHA256 = "a744775492ec0c0b0df9804b3b83918aea8b9deb56b3084b1efb81731242c6
 #: re-vendored; `install_live` already reports that this build ships none.
 LIVE_ASI_ENABLED = False
 
+# HelixSR (https://github.com/lonewolf0622/HelixSR) is a separate project: it runs
+# NVIDIA's DLSS network — or from 3.x, AMD's FSR 4 network — on AMD GPUs by
+# replacing what the game or OptiScaler calls for upscaling. This plugin neither
+# installs nor removes it, but it lands in the same folder and explains why the
+# FSR 4 panel can disagree with what the game is actually running.
+HELIXSR_DIR = "HelixSR"
+#: Written by HelixSR's own installer when it replaces the game's FSR 3.1 DLL.
+HELIXSR_MARKER = "helixsr-install.json"
+#: Written beside it by HelixSR 1.x; 3.x drops it.
+HELIXSR_INI = "helixsr.ini"
+#: HelixSR's copy of the OptiScaler settings it changed, kept for its revert.
+HELIXSR_SETTINGS_BACKUP = "OptiScaler.ini.helixsr-backup"
+
 INI_NAME = "OptiScaler.ini"
 LOG_NAME = "OptiScaler.log"
 # Written by this plugin so an install can be recognised later with certainty.

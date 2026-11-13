@@ -1,9 +1,29 @@
 # Changelog
 
 Newest first. Each release ships `Decky OptiScaler.zip` for Decky Loader's
-*Install from URL* (Developer mode), and bundles **OptiScaler 0.9.4**.
+*Install from URL* (Developer mode), and bundles **OptiScaler 10.0.0-pre1**.
 
 ## [Unreleased]
+
+## [0.8.1] - 2026-11-13
+
+### Added
+
+- **HelixSR is detected and marked in the FSR 4 panel.** HelixSR runs NVIDIA's
+  DLSS network — or FSR 4, from 3.x — on an AMD GPU by taking over what the game
+  or OptiScaler asks for, so while it is installed the build shown in this plugin
+  is not what renders. It is now reported in yellow with a note saying so, and
+  the build picker says plainly that switching does nothing while HelixSR is in
+  place. Both routes are recognised: HelixSR's own installer (its
+  `helixsr-install.json` marker and, up to 1.x, `helixsr.ini`) and the OptiScaler
+  route (a `HelixSR/` folder beside `OptiScaler.ini`, with `FfxDx12Path` or
+  `FfxDx12SRPath` pointed into it). This plugin still neither installs nor
+  removes HelixSR, and a leftover folder with the ini pointing elsewhere is not
+  reported as an install.
+
+### Fixed
+
+- The changelog header still said this release bundles OptiScaler 0.9.4.
 
 ## [0.8.0] - 2026-11-13
 

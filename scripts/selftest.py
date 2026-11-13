@@ -390,6 +390,54 @@ async def run():
         check("and clears the record of the imported one",
               not (installer.read_manifest(target) or {}).get("fsr4_build"))
 
+        print("\nHelixSR")
+        # Nothing about HelixSR is this plugin's to own: it is detected from the
+        # files its own installer leaves, so the panel can stop implying that its
+        # build picker decides what the game renders with. Each route is checked
+        # separately because they mean different things and can both be present.
+        from optiscaler.inifile import IniFile  # noqa: E402
+
+        check("a folder with neither route reports nothing",
+              installer.helixsr_status(str(target))["installed"] is False)
+        marker = target / "helixsr-install.json"
+        marker.write_text('{"version": "3.1.0"}', encoding="utf-8")
+        direct = installer.helixsr_status(str(target))
+        check("HelixSR's own installer is detected from its marker",
+              direct["installed"] and "in place of the game's FSR" in direct["routes"],
+              direct)
+        check("and the version it wrote is read back",
+              direct["version"] == "3.1.0", direct["version"])
+        marker.write_text("not json at all", encoding="utf-8")
+        check("a marker that will not parse still counts as installed",
+              installer.helixsr_status(str(target))["installed"]
+              and installer.helixsr_status(str(target))["version"] is None)
+        marker.unlink()
+
+        # The OptiScaler route: a folder beside OptiScaler.ini, and the ini
+        # pointing at it. The folder alone is not enough — HelixSR leaves it
+        # behind when it is switched off, and then the panel must say nothing.
+        (target / installer.HELIXSR_DIR).mkdir()
+        check("a leftover HelixSR folder on its own is not an install",
+              installer.helixsr_status(str(target))["installed"] is False)
+        ini_path = target / installer.INI_NAME
+        ini = IniFile(ini_path)
+        ini.set("FSR", "FfxDx12SRPath", "Z:\\games\\Test\\HelixSR\\amd_fidelityfx_upscaler_dx12.dll")
+        ini.save()
+        routed = installer.helixsr_status(str(target))
+        check("OptiScaler pointed into that folder is detected",
+              routed["installed"] and "through OptiScaler" in routed["routes"], routed)
+        check("and the folder is reported, not the file inside it",
+              routed["folder"] and routed["folder"].endswith(installer.HELIXSR_DIR),
+              routed["folder"])
+        check("which is what the FSR 4 status carries through to the panel",
+              installer.fsr4_status(str(target))["helixsr"]["installed"])
+        ini = IniFile(ini_path)
+        ini.set("FSR", "FfxDx12SRPath", "auto")
+        ini.save()
+        check("and pointing it back at auto clears the report",
+              installer.helixsr_status(str(target))["installed"] is False)
+        (target / installer.HELIXSR_DIR).rmdir()
+
         print("\nConfiguration")
         config = await service.read_config(str(target))
         # Tied to the ini that is actually installed rather than to a number, so

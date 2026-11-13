@@ -101,6 +101,25 @@ export interface Fsr4Status {
   build?: Fsr4Build | null;
   /** The installed build is retired, so what is here is worth replacing. */
   needs_replacement?: boolean;
+  /** Another upscaler in the same folder, which decides what actually runs. */
+  helixsr?: HelixSrStatus;
+}
+
+/**
+ * HelixSR run another vendor's upscaler network on an AMD GPU, by taking over
+ * what the game or OptiScaler asks for. This plugin never installs or removes
+ * it; it only reports it, because while it is present the FSR 4 build shown
+ * above is not necessarily the one doing the work.
+ */
+export interface HelixSrStatus {
+  installed: boolean;
+  /** How it is wired in, in words: our own installer only does the first. */
+  routes: string[];
+  version?: string | null;
+  /** The `HelixSR/` folder, when the OptiScaler route was used. */
+  folder?: string | null;
+  /** HelixSR keeps OptiScaler's pre-install settings; its revert puts them back. */
+  settings_backup?: boolean;
 }
 
 /** Everything the FSR 4 panel needs: what is installed, and what could be. */

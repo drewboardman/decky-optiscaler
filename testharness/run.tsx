@@ -586,6 +586,25 @@ async function render(name: string, element: React.ReactElement) {
     console.log(`  and does not call the install broken: ${!staleText.includes("did not install cleanly")}`);
     info.status.build = installed;
     info.status.needs_replacement = false;
+
+    // HelixSR runs another vendor's network by taking over what the game asks
+    // for, so its presence is not a problem to fix — but it does mean the build
+    // shown above is not what renders. The panel says so in yellow and leaves
+    // the picker alone, because switching builds changes nothing while it is in.
+    info.status.helixsr = {
+      installed: true, routes: ["through OptiScaler"], version: null,
+      folder: "/games/Cyberpunk 2077/bin/x64/HelixSR", settings_backup: true,
+    };
+    const helix = await mount("Fsr4PanelHelixSr");
+    const helixText = helix.host.textContent!;
+    console.log(`  HelixSR in the folder is marked in the header: ${helixText.includes("HelixSR is installed here")}`);
+    console.log(`  and says whose upscaler wins: ${helixText.includes("not necessarily what the game renders with")}`);
+    console.log(`  and that its own installer did not do this: ${helixText.includes("does not install or remove HelixSR")}`);
+    console.log(`  while still offering the builds: ${helixText.includes("Switch to 4.1.1b (INT8, RDNA 2)")}`);
+    info.status.helixsr = { installed: false, routes: [] };
+    const plain = await mount("Fsr4PanelNoHelixSr");
+    console.log(`  and nothing is said when it is absent: ${!plain.host.textContent!.includes("HelixSR")}`);
+    info.status.helixsr = undefined;
   }
 
   // Flip to advanced mode and re-render.
