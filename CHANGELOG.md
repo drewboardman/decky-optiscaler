@@ -5,6 +5,23 @@ Newest first. Each release ships `Decky OptiScaler.zip` for Decky Loader's
 
 ## [Unreleased]
 
+## [0.0.7-steamdeck.9] - 2026-11-13
+
+### Fixed
+
+- **The compatibility list is read whole again.** One row in the wiki table — Metro
+  Exodus: Enhanced Edition — was saved without its leading pipe, which the parser
+  took as the end of the table: every row after it was dropped. That is 297 of 695
+  games, among them Monster Hunter Wilds, every Resident Evil entry and Stalker 2,
+  each reported to the user as "no wiki entry matched". A line that still ends the
+  way a row ends and carries enough separators to be one is now read as the row it
+  is, and prose carrying a pipe still is not.
+- The two mod tables on that page have their own shape — no OptiPatcher column.
+  Read by column position, their notes were taken for patcher support, so every
+  game listed there claimed OptiPatcher, and their images column was served as the
+  entry's notes to both the user and the plan builder. Columns now come from each
+  table's own header row.
+
 ## [0.0.7-steamdeck.8] - 2026-11-13
 
 ### Changed
